@@ -12,7 +12,7 @@ clean:
 	@echo "  >  Removing $(APP) executable"
 	@rm $(APP) 2> /dev/null | true
 
-check:
+staticcheck:
 	staticcheck -checks=all ./...
 
 tidy:
