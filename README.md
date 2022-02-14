@@ -25,3 +25,6 @@
     - The part of understaing of what happens when we run ```go mod tidy``` has to do with another env variable called ```GOPROXY```
     - ```GOPROXY``` by default points to ```http://proxy.golang.org``` and its primary responsibility is to direct tooling to the proxy server where all code we want to download lives. The job of the proxy server is to proxy all of the VCSs (Github, Gitlab, ...) and make the module of code we need accessible under one unified location.
     - when we request module without specific tag version ```go mod tidy``` requests list of all of the available version tags. Since we request for the direct dependency ```go mod tidy``` decides to download the latest gratest version of the module by default.
+
+- TODO: Write notes on checksum db
+- TODO: Write notes on vendoring
