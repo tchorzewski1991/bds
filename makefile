@@ -1,5 +1,8 @@
 APP=fds
 
+# =============================================================================
+# Local development section
+
 run: 
 	go run main.go
 
