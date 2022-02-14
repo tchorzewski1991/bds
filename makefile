@@ -7,7 +7,7 @@ run:
 	go run main.go
 
 build:
-	go build -o $(APP)
+	go build -o $(APP) -ldflags '-X main.build=local'
 
 clean:
 	@echo "  >  Cleaning build cache"
