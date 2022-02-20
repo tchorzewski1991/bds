@@ -6,7 +6,7 @@
 
 - It is worth to remember that adding new dependencies is easier then removing them. Keep it simple.
 
-##### Go modules support
+#### Go modules support
 
 - presense of the ```go 1.17``` version inside the ```go.mod``` file has the following meaning:
     - Its primary purpose is to ensure Golang tooling works properly
@@ -28,3 +28,11 @@
 
 - TODO: Write notes on checksum db
 - TODO: Write notes on vendoring
+
+#### Setup for local k8s environment
+
+- Create new kind cluster
+    - Add initial config file under ```k8s/kind/kind-config.yaml```
+    - In our case ```kind-config.yaml``` will be used to store setup for ports and to make our service available outside of the k8s environment.
+    - ```kind-config.yaml``` is used as a part of ```kind create cluster``` command while setting up a new cluster.
+- Update ```k8s``` namespace with some base configuration for ```flights-api``` pod which will be common to all of the environments. In the latter steps it will be modified with ```kustomize```.
