@@ -4,10 +4,10 @@ APP=fds
 # Local development section
 
 run: 
-	go run main.go
+	go run ./app/services/flights-api/main.go
 
 build:
-	go build -o $(APP) -ldflags '-X main.build=local'
+	go build -o $(APP) -ldflags '-X main.build=local' ./app/services/flights-api
 
 clean:
 	@echo "  >  Cleaning build cache"
@@ -30,7 +30,7 @@ all: flights-api
 
 flights-api:
 	docker build \
-		-f infra/docker/dockerfile \
+		-f infra/docker/dockerfile.flights-api \
 		-t flights-api-amd64:$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		--build-arg BUILD_REF=$(VERSION) \
