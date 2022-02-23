@@ -36,6 +36,15 @@ flights-api:
 		--build-arg BUILD_REF=$(VERSION) \
 		.
 
+docker-down:
+	docker rm -f $(docker ps -aq)
+
+docker-clean:
+	docker system prune -f
+
+docker-kind-logs:
+	docker logs -f $(KIND_CLUSTER)-control-plane
+
 # =============================================================================
 # Running withing k8s cluster
 
