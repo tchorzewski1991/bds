@@ -68,6 +68,7 @@ kind-status-flights-system:
 	kubectl get pods -o wide --watch
 
 kind-load:
+	cd infra/k8s/kind/flights-pod; kustomize edit set image flights-api-image=flights-api-amd64:$(VERSION)
 	kind load docker-image flights-api-amd64:$(VERSION) --name $(KIND_CLUSTER)
 
 kind-apply:
