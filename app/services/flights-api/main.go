@@ -45,18 +45,16 @@ func main() {
 	// Create new logger
 	l, err := logger.New(fields...)
 	if err != nil {
-		fmt.Println("Error constructing logger:", err)
+		fmt.Println("Constructing logger error:", err)
 		os.Exit(1)
 	}
-	// Flush internal logger buffer
-	defer func() {
-		if err = l.Sync(); err != nil {
-			fmt.Println("Error flushing logger:", err)
-		}
-	}()
+	// Flush logger buffer
+	defer l.Sync()
+
 	// Run application
 	if err = run(l); err != nil {
-		l.Errorf("Error running app: %s", err)
+		l.Error(err)
+		l.Errorf("Running app error: %s", err)
 		os.Exit(1)
 	}
 }
