@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/ardanlabs/conf/v3"
 	"os"
 	"os/signal"
 	"runtime"
@@ -60,8 +62,40 @@ func main() {
 }
 
 func run(logger *zap.SugaredLogger) error {
+	// ================================================================================================================
+	// Configuration
+	logger.Info("Parsing config")
+
+	cfg := struct {
+		conf.Version
+	}{
+		Version: conf.Version{
+			Build: build,
+			Desc:  "Current build version",
+		},
+	}
+
+	const prefix = "FLIGHTS"
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
+			return nil
+		}
+		return fmt.Errorf("parsing config:  %w", err)
+	}
+
+	out, err := conf.String(&cfg)
+	if err != nil {
+		return fmt.Errorf("generating config output: %w", err)
+	}
+	logger.Infow("Config parsed", "config", out)
+
+	// ================================================================================================================
+	// Starting App
+
 	logger.Info("Starting service")
-	defer logger.Info("Stopped service")
+	defer logger.Info("Service stopped")
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
