@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/ardanlabs/conf/v3"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
+
+	"github.com/ardanlabs/conf/v3"
 
 	"github.com/emadolsky/automaxprocs/maxprocs"
 	"github.com/tchorzewski1991/fds/base/logger"
