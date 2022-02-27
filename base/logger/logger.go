@@ -5,6 +5,7 @@ import "go.uber.org/zap"
 func New(fields ...Field) (*zap.SugaredLogger, error) {
 	conf := zap.NewProductionConfig()
 	conf.DisableStacktrace = true
+	conf.DisableCaller = true
 	conf.OutputPaths = []string{"stdout"}
 
 	// Assign initial fields common to all of logs
