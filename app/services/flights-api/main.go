@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	"github.com/ardanlabs/conf/v3"
-
 	"github.com/emadolsky/automaxprocs/maxprocs"
 	"github.com/tchorzewski1991/fds/base/logger"
 	_ "go.uber.org/automaxprocs"
@@ -69,6 +69,14 @@ func run(logger *zap.SugaredLogger) error {
 
 	cfg := struct {
 		conf.Version
+		Api struct {
+			Host            string        `conf:"default:0.0.0.0:3000"`
+			DebugHost       string        `conf:"default:0.0.0.0:4000"`
+			ReadTimeout     time.Duration `conf:"default:5s"`
+			WriteTimeout    time.Duration `conf:"default:10s"`
+			IdleTimeout     time.Duration `conf:"default:30s"`
+			ShutdownTimeout time.Duration `conf:"default:30s"`
+		}
 	}{
 		Version: conf.Version{
 			Build: build,
