@@ -1,3 +1,4 @@
+// Package logger provides a helper function responsible for encapsulating logger construction.
 package logger
 
 import "go.uber.org/zap"
