@@ -4,7 +4,7 @@ APP=fds
 # Local development section
 
 run: 
-	go run ./app/services/flights-api/main.go
+	go run app/services/flights-api/main.go | go run app/services/tools/fmt/main.go
 
 build:
 	go build -o $(APP) -ldflags '-X main.build=local' ./app/services/flights-api
@@ -75,7 +75,7 @@ kind-apply:
 	kustomize build infra/k8s/kind/flights-pod/ | kubectl apply -f -
 
 kind-logs:
-	kubectl logs -l app=flights --all-containers=true -f --tail=100
+	kubectl logs -l app=flights --all-containers=true -f --tail=100 | go run app/services/tools/fmt/main.go
 
 kind-restart:
 	kubectl rollout restart deployment flights-pod
