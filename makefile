@@ -22,6 +22,10 @@ tidy:
 	go mod tidy
 	go mod vendor
 
+monitor:
+	go install github.com/divan/expvarmon@latest
+	expvarmon -ports="4000"
+
 # =============================================================================
 # Docker containers section
 VERSION := 1.0
