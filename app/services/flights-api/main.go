@@ -28,7 +28,7 @@ func main() {
 	// Set the correct number of threads for the service
 	// based on what is available either by the machine or quotas.
 	if _, err := maxprocs.Set(); err != nil {
-		fmt.Println("maxprocs: %w", err)
+		fmt.Println("Setting maxprocs error: %w", err)
 	}
 	cpu := runtime.GOMAXPROCS(0)
 
@@ -58,7 +58,6 @@ func main() {
 
 	// Run application
 	if err = run(l); err != nil {
-		l.Error(err)
 		l.Errorf("Running app error: %s", err)
 		os.Exit(1)
 	}
