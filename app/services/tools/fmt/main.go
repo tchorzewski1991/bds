@@ -20,7 +20,6 @@ func main() {
 
 		err := json.Unmarshal([]byte(line), &m)
 		if err != nil {
-			log.Println(err)
 			continue
 		}
 
