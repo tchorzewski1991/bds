@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/tchorzewski1991/fds/app/services/flights-api/handlers"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -101,16 +103,29 @@ func run(logger *zap.SugaredLogger) error {
 	logger.Infow("Config parsed", "config", out)
 
 	// ================================================================================================================
+	// Start Debug service
+
+	logger.Infow("Starting debug service", "host", cfg.Api.DebugHost)
+
+	debugMux := handlers.DebugMux()
+
+	go func() {
+		if err = http.ListenAndServe(cfg.Api.DebugHost, debugMux); err != nil {
+			logger.Errorw("Debug service shutdown", "host", cfg.Api.DebugHost, "error", err)
+		}
+	}()
+
+	// ================================================================================================================
 	// Starting App
 
-	logger.Info("Starting service")
-	defer logger.Info("Service stopped")
+	logger.Infow("Starting service", "host", cfg.Api.Host)
+	defer logger.Infow("Service stopped", "host", cfg.Api.Host)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 	<-shutdown
 
-	logger.Info("Stopping service")
+	logger.Infow("Stopping service", "host", cfg.Api.Host)
 
 	return nil
 }
