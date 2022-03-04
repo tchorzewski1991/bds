@@ -23,6 +23,11 @@ spec:
       containers:
         - name: flights-api
           image: flights-api-image
+          ports:
+            - name: flights-api
+              containerPort: 3000
+            - name: flights-debug
+              containerPort: 4000
           resources:
             limits:
               cpu: "1000m"
