@@ -30,4 +30,20 @@ spec:
             requests:
               cpu: "500m"
               memory: "50M"
- 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flights-service
+  namespace: flights-system
+spec:
+  type: ClusterIP
+  selector:
+    app: flights
+  ports:
+    - name: flights-api
+      port: 3000 # refers to the port we want to access outside the cluster
+      targetPort: flights-api # refers to the container port inside the cluster
+    - name: flights-debug
+      port: 4000 # refers to the port we want to access outside the cluster
+      targetPort: flights-debug # refers to the container port inside the cluster
