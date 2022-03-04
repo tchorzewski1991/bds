@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/tchorzewski1991/fds/app/services/flights-api/handlers"
@@ -117,14 +118,52 @@ func run(logger *zap.SugaredLogger) error {
 	// ================================================================================================================
 	// Starting App
 
-	logger.Infow("Starting service", "host", cfg.Api.Host)
-	defer logger.Infow("Service stopped", "host", cfg.Api.Host)
-
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
-	<-shutdown
 
-	logger.Infow("Stopping service", "host", cfg.Api.Host)
+	// WHy do we need to set up our own http.Server?
+	//
+	// First and foremost we want to focus on the graceful load shedding.
+	// Our app is constantly running many goroutines, so we can't just kill it.
+	// We want to be sure those goroutines had a chance to finish their work.
+	//
+	// http.ListenAndServe() does not allow for setting custom timeouts.
+	//
+	// In order to have a more control over application shutdown we need to initialize
+	// our own http.Server with proper configuration.
+
+	api := http.Server{
+		Addr:         cfg.Api.Host,
+		Handler:      nil,
+		ReadTimeout:  cfg.Api.ReadTimeout,
+		WriteTimeout: cfg.Api.WriteTimeout,
+		IdleTimeout:  cfg.Api.IdleTimeout,
+		ErrorLog:     zap.NewStdLog(logger.Desugar()),
+	}
+
+	apiErrors := make(chan error, 1)
+
+	go func() {
+		logger.Infow("Starting service", "host", cfg.Api.Host)
+		defer logger.Infow("Service stopped", "host", cfg.Api.Host)
+		apiErrors <- api.ListenAndServe()
+	}()
+
+	select {
+	case err = <-apiErrors:
+		return fmt.Errorf("server error: %w", err)
+	case sig := <-shutdown:
+		logger.Infow("Starting shutdown", "signal", sig)
+		defer logger.Infow("Shutdown complete", "signal", sig)
+
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.Api.ShutdownTimeout)
+		defer cancel()
+
+		if err = api.Shutdown(ctx); err != nil {
+			_ = api.Close()
+			return fmt.Errorf("cannot shutdown server gracefully: %w", err)
+		}
+	}
 
 	return nil
 }
