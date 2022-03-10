@@ -20,12 +20,21 @@ type DebugMuxConfig struct {
 func DebugMux(cfg DebugMuxConfig) http.Handler {
 	mux := http.NewServeMux()
 
+	// Register all the std library debug endpoints.
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	mux.Handle("/debug/vars", expvar.Handler())
+
+	// Register check group endpoints
+	cgh := checkgrp.Handlers{
+		Build:  cfg.Build,
+		Logger: cfg.Logger,
+	}
+	mux.HandleFunc("/debug/readiness", cgh.Readiness)
+	mux.HandleFunc("/debug/liveness", cgh.Liveness)
 
 	return mux
 }
