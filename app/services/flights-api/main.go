@@ -121,6 +121,11 @@ func run(logger *zap.SugaredLogger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 
+	apiMux := handlers.ApiMux(handlers.ApiMuxConfig{
+		Shutdown: shutdown,
+		Logger:   logger,
+	})
+
 	// WHy do we need to set up our own http.Server?
 	//
 	// First and foremost we want to focus on the graceful load shedding.
@@ -134,7 +139,7 @@ func run(logger *zap.SugaredLogger) error {
 
 	api := http.Server{
 		Addr:         cfg.Api.Host,
-		Handler:      nil,
+		Handler:      apiMux,
 		ReadTimeout:  cfg.Api.ReadTimeout,
 		WriteTimeout: cfg.Api.WriteTimeout,
 		IdleTimeout:  cfg.Api.IdleTimeout,
