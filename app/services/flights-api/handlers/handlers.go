@@ -12,7 +12,12 @@ import (
 	"os"
 )
 
-func DebugMux() http.Handler {
+type DebugMuxConfig struct {
+	Build  string
+	Logger *zap.SugaredLogger
+}
+
+func DebugMux(cfg DebugMuxConfig) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/debug/pprof/", pprof.Index)

@@ -107,7 +107,10 @@ func run(logger *zap.SugaredLogger) error {
 
 	logger.Infow("Starting debug service", "host", cfg.Api.DebugHost)
 
-	debugMux := handlers.DebugMux()
+	debugMux := handlers.DebugMux(handlers.DebugMuxConfig{
+		Build:  build,
+		Logger: logger,
+	})
 
 	go func() {
 		if err = http.ListenAndServe(cfg.Api.DebugHost, debugMux); err != nil {
