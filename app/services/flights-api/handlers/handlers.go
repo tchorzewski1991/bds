@@ -4,10 +4,10 @@ package handlers
 
 import (
 	"expvar"
-	"github.com/dimfeld/httptreemux/v5"
 	"github.com/tchorzewski1991/fds/app/services/flights-api/handlers/debug/checkgrp"
 	v1 "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v1"
 	v2 "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v2"
+	"github.com/tchorzewski1991/fds/base/web"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
@@ -47,13 +47,13 @@ type ApiMuxConfig struct {
 }
 
 func ApiMux(cfg ApiMuxConfig) http.Handler {
-	mux := httptreemux.NewContextMux()
+	app := web.NewApp()
 
 	// Load the v1 routes.
-	v1.Routes(mux, v1.Config{Logger: cfg.Logger})
+	v1.Routes(app, v1.Config{Logger: cfg.Logger})
 
 	// Load the v2 routes.
-	v2.Routes(mux, v2.Config{Logger: cfg.Logger})
+	v2.Routes(app, v2.Config{Logger: cfg.Logger})
 
-	return mux
+	return app
 }

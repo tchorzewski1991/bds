@@ -1,8 +1,8 @@
 package v2
 
 import (
+	"github.com/tchorzewski1991/fds/base/web"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 type Config struct {
@@ -10,4 +10,4 @@ type Config struct {
 }
 
 // Routes binds all the version 2 routes
-func Routes(mux http.Handler, cfg Config) {}
+func Routes(app *web.App, cfg Config) {}
