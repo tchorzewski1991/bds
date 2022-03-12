@@ -6,6 +6,8 @@ import (
 	"expvar"
 	"github.com/dimfeld/httptreemux/v5"
 	"github.com/tchorzewski1991/fds/app/services/flights-api/handlers/debug/checkgrp"
+	v1 "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v1"
+	v2 "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v2"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
@@ -44,8 +46,14 @@ type ApiMuxConfig struct {
 	Logger   *zap.SugaredLogger
 }
 
-func ApiMux(_ ApiMuxConfig) http.Handler {
+func ApiMux(cfg ApiMuxConfig) http.Handler {
 	mux := httptreemux.NewContextMux()
+
+	// Load the v1 routes.
+	v1.Routes(mux, v1.Config{Logger: cfg.Logger})
+
+	// Load the v2 routes.
+	v2.Routes(mux, v2.Config{Logger: cfg.Logger})
 
 	return mux
 }
