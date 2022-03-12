@@ -47,7 +47,7 @@ type ApiMuxConfig struct {
 }
 
 func ApiMux(cfg ApiMuxConfig) http.Handler {
-	app := web.NewApp()
+	app := web.NewApp(cfg.Shutdown)
 
 	// Load the v1 routes.
 	v1.Routes(app, v1.Config{Logger: cfg.Logger})
