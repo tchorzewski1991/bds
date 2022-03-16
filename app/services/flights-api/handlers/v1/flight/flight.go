@@ -2,7 +2,7 @@ package flight
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/tchorzewski1991/fds/base/web"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ import (
 // - There is a bunch of details we want to keep consistent between each of these handlers
 //   like: logging, error handling or JSON marshaling protocol.
 
-func List(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
+func List(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 	type flight struct {
 		Identifier string `json:"identifier"`
 	}
@@ -21,9 +21,10 @@ func List(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
 			Identifier: "LH-1111-20220101-GDN-WAW",
 		},
 	}
-	err := json.NewEncoder(w).Encode(list)
+	err := web.Response(ctx, w, http.StatusOK, list)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
