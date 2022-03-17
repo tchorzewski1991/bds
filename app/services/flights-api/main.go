@@ -31,7 +31,8 @@ func main() {
 	if _, err := maxprocs.Set(); err != nil {
 		fmt.Println("Setting maxprocs error: %w", err)
 	}
-	cpu := runtime.GOMAXPROCS(0)
+	// TODO: Figure out how and where to put info about cpu.
+	_ = runtime.GOMAXPROCS(0)
 
 	// ================================================================================================================
 	// Construct application logger
@@ -40,12 +41,6 @@ func main() {
 	fields := []logger.Field{
 		{
 			Name: "service", Value: service,
-		},
-		{
-			Name: "build", Value: build,
-		},
-		{
-			Name: "cpu", Value: cpu,
 		},
 	}
 	// Create new logger
