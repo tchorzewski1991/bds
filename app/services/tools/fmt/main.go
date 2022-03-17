@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+const (
+	service = "service"
+	ts      = "ts"
+	level   = "level"
+	traceID = "trace_id"
+	msg     = "msg"
+)
+
 func main() {
 	var b strings.Builder
 	scanner := bufio.NewScanner(os.Stdin)
@@ -23,23 +31,31 @@ func main() {
 			continue
 		}
 
-		traceID := "00000000"
-		if v, ok := m["trace_id"]; ok {
-			traceID = v.(string)
+		b.Reset()
+
+		if v, ok := m[service]; ok {
+			b.WriteString(fmt.Sprintf("%s | ", v))
 		}
 
-		b.Reset()
-		b.WriteString(fmt.Sprintf("%s | %s | %s | %s | %s | ",
-			m["service"],
-			m["ts"],
-			m["level"],
-			traceID,
-			m["msg"],
-		))
+		if v, ok := m[ts]; ok {
+			b.WriteString(fmt.Sprintf("%s | ", v))
+		}
+
+		if v, ok := m[level]; ok {
+			b.WriteString(fmt.Sprintf("%s | ", v))
+		}
+
+		if v, ok := m[traceID]; ok {
+			b.WriteString(fmt.Sprintf("%s | ", v))
+		}
+
+		if v, ok := m[msg]; ok {
+			b.WriteString(fmt.Sprintf("%s | ", v))
+		}
 
 		for k, v := range m {
 			switch k {
-			case "service", "ts", "level", "trace_id", "msg":
+			case service, ts, level, traceID, msg:
 				continue
 			}
 			b.WriteString(fmt.Sprintf("%s[%v] | ", k, v))
