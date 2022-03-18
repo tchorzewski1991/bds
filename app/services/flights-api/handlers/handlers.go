@@ -57,6 +57,7 @@ func ApiMux(cfg ApiMuxConfig) http.Handler {
 	app := web.NewApp(
 		cfg.Shutdown,
 		mid.Logger(cfg.Logger),
+		mid.Errors(cfg.Logger),
 	)
 
 	// Load the v1 routes.
