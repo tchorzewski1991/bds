@@ -3,9 +3,11 @@ package web
 import (
 	"context"
 	"github.com/dimfeld/httptreemux/v5"
+	"github.com/google/uuid"
 	"net/http"
 	"os"
 	"syscall"
+	"time"
 )
 
 // Handler represents type responsible for handling http request.
@@ -42,7 +44,22 @@ func (a *App) Handle(method string, version string, path string, handler Handler
 	// Prepare the function to execute for each request.
 	// This anonymous func wraps Handler with proper error handling.
 	h := func(w http.ResponseWriter, r *http.Request) {
-		if err := handler(r.Context(), w, r); err != nil {
+
+		// Pull context out of the *http.Request and extend it with
+		// custom data expected by other middleware.
+		//
+		// Context might be a good place for storing values like:
+		// - start time of the request
+		// - response code
+		// - trace ID
+		ctx := r.Context()
+
+		ctx = context.WithValue(ctx, key, &CtxValues{
+			TraceID: uuid.Must(uuid.NewRandom()).String(),
+			Now:     time.Now().UTC(),
+		})
+
+		if err := handler(ctx, w, r); err != nil {
 			a.Shutdown()
 			return
 		}

@@ -31,12 +31,11 @@ func Logger(logger *zap.SugaredLogger) web.Middleware {
 			// Call the next handler in the chain.
 			err = handler(ctx, w, r)
 
-			// TODO: Extract status code of the response and log it.
-
 			logger.Infow("request ended",
 				"trace_id", v.TraceID,
 				"method", r.Method,
 				"path", r.URL.Path,
+				"status", v.StatusCode,
 				"time", time.Since(v.Now).String(),
 			)
 

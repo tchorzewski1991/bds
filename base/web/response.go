@@ -8,6 +8,12 @@ import (
 
 func Response(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) error {
 
+	// Set status code in the context.
+	err := SetStatusCode(ctx, statusCode)
+	if err != nil {
+		return err
+	}
+
 	// If there is nothing to marshal then set status code and return.
 	if statusCode == http.StatusNoContent {
 		w.WriteHeader(statusCode)
