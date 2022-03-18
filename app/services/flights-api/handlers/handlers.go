@@ -8,6 +8,7 @@ import (
 	v1 "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v1"
 	v2 "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v2"
 	"github.com/tchorzewski1991/fds/base/web"
+	"github.com/tchorzewski1991/fds/business/web/v1/mid"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
@@ -47,7 +48,16 @@ type ApiMuxConfig struct {
 }
 
 func ApiMux(cfg ApiMuxConfig) http.Handler {
-	app := web.NewApp(cfg.Shutdown)
+
+	// Notes and inconsistencies:
+	// 1. Let's assume web.App uses one logger for both API versions. Question - where should we put this
+	//    logging middleware? How to handle situation when we want to use different logging for both API versions?
+	//    Shouldn't we create a form of "registry" for version specific middleware?
+
+	app := web.NewApp(
+		cfg.Shutdown,
+		mid.Logger(cfg.Logger),
+	)
 
 	// Load the v1 routes.
 	v1.Routes(app, v1.Config{Logger: cfg.Logger})
