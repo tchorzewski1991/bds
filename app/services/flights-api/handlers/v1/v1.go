@@ -16,4 +16,5 @@ type Config struct {
 // Routes binds all the routes for API version 1
 func Routes(app *web.App, _ Config) {
 	app.Handle(http.MethodGet, version, "/flights", fh.List)
+	app.Handle(http.MethodGet, version, "/flights/:id", fh.QueryByID)
 }

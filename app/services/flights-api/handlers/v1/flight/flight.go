@@ -2,7 +2,10 @@ package flight
 
 import (
 	"context"
+	"errors"
+	"github.com/dimfeld/httptreemux/v5"
 	"github.com/tchorzewski1991/fds/base/web"
+	v1 "github.com/tchorzewski1991/fds/business/web/v1"
 	"net/http"
 )
 
@@ -21,6 +24,23 @@ func List(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 	return nil
 }
 
+func QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	data := httptreemux.ContextData(r.Context())
+	params := data.Params()
+
+	f, err := getFlight(params["id"])
+	if err != nil {
+		return v1.NewRequestError(err, http.StatusNotFound)
+	}
+
+	err = web.Response(ctx, w, http.StatusOK, f)
+	if err != nil {
+		return v1.NewRequestError(err, http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
 // private
 
 type flight struct {
@@ -31,4 +51,13 @@ var flights = []flight{
 	{
 		Identifier: "LH-1111-20220101-GDN-WAW",
 	},
+}
+
+func getFlight(identifier string) (flight, error) {
+	for _, f := range flights {
+		if f.Identifier == identifier {
+			return f, nil
+		}
+	}
+	return flight{}, errors.New("flight not found")
 }
