@@ -15,12 +15,14 @@ type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) e
 type App struct {
 	mux      *httptreemux.ContextMux
 	shutdown chan os.Signal
+	mw       []Middleware
 }
 
-func NewApp(shutdown chan os.Signal) *App {
+func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
 	return &App{
 		mux:      httptreemux.NewContextMux(),
 		shutdown: shutdown,
+		mw:       mw,
 	}
 }
 
@@ -33,6 +35,10 @@ func (a *App) Shutdown() {
 }
 
 func (a *App) Handle(method string, version string, path string, handler Handler) {
+
+	// Wrap handler with application level middleware
+	handler = wrapMiddleware(a.mw, handler)
+
 	// Prepare the function to execute for each request.
 	// This anonymous func wraps Handler with proper error handling.
 	h := func(w http.ResponseWriter, r *http.Request) {
