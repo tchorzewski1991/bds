@@ -13,19 +13,23 @@ func Errors(logger *zap.SugaredLogger) web.Middleware {
 	m := func(handler web.Handler) web.Handler {
 
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			// Try to extract ctx values from ctx.
-			// TODO: Implement request shutdown in case of failure.
+			// We don't want to continue app execution while ctx values are missing.
+			// We want service to be gracefully shutdown.
 			v, err := web.GetCtxValues(ctx)
 			if err != nil {
-				return err
+				return web.NewShutdownError("cannot fetch values out of context")
 			}
-			// Execute handler and handle error according to its type.
+			// Execute original handler and act on error according to its type.
 			err = handler(ctx, w, r)
 			if err != nil {
+				// Log the error.
+				// TODO: what we want to log here?
 				logger.Errorw(err.Error(), "trace_id", v.TraceID)
 
+				// We want to have consistent error response for all the v1 endpoints.
 				var er v1.ErrorResponse
 
+				// Build out error response.
 				switch {
 				case v1.IsRequestError(err):
 					rErr := v1.GetRequestError(err)
@@ -40,8 +44,15 @@ func Errors(logger *zap.SugaredLogger) web.Middleware {
 					}
 				}
 
+				// Send error response back to the client.
 				err = web.Response(ctx, w, er.Status, er)
 				if err != nil {
+					return err
+				}
+
+				// If we receive the shutdown error we need to return it back to
+				// the base handler and shut down service.
+				if web.IsShutdownError(err) {
 					return err
 				}
 			}

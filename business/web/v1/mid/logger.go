@@ -16,10 +16,9 @@ func Logger(logger *zap.SugaredLogger) web.Middleware {
 		// This is a web.Handler func that will wrap original handler with logging functionality
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			// Try to extract ctx values from ctx.
-			// TODO: Implement request shutdown in case of failure.
 			v, err := web.GetCtxValues(ctx)
 			if err != nil {
-				return err
+				return web.NewShutdownError("cannot fetch values from context")
 			}
 
 			logger.Infow("request started",
