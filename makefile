@@ -24,7 +24,7 @@ tidy:
 
 monitor:
 	go install github.com/divan/expvarmon@latest
-	expvarmon -ports="4000"
+	expvarmon -ports="4000" -vars="requests,goroutines,errors,panics"
 
 # =============================================================================
 # Docker containers section

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/tchorzewski1991/fds/base/web"
+	"github.com/tchorzewski1991/fds/business/sys/metrics"
 	"net/http"
 	"runtime/debug"
 )
@@ -25,6 +26,9 @@ func Panics() web.Middleware {
 					// Stack trace will be provided.
 					trace := debug.Stack()
 					err = fmt.Errorf("PANIC [%v] TRACE[%s]", rec, string(trace))
+
+					// Increment number of panics.
+					metrics.AddPanics(ctx)
 				}
 			}()
 

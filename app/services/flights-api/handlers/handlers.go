@@ -58,6 +58,7 @@ func ApiMux(cfg ApiMuxConfig) http.Handler {
 		cfg.Shutdown,
 		mid.Logger(cfg.Logger),
 		mid.Errors(cfg.Logger),
+		mid.Metrics(),
 		mid.Panics(),
 	)
 
