@@ -55,32 +55,28 @@ func Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	}{tkn})
 }
 
-func Protected(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func Protected(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 
-	// Get claims out of the ctx.
-	// At this point we should always have them available.
-	// They are set through auth middleware.
+	// Get claims out of the ctx. At this point we should always have them available
+	// as user has already been authenticated and authorized.
 	claims, err := auth.GetClaims(ctx)
 	if err != nil {
 		return v1.NewRequestError(err, http.StatusForbidden)
 	}
 
-	// Ensure claims owner is authorized to perform the action on the resource.
-	err = auth.Authorize(claims, func(resource, action string) bool {
-		return resource == "user" && action == "protected"
-	})
+	_, err = getUserByUUID(claims.Subject)
 	if err != nil {
-		return v1.NewRequestError(err, http.StatusForbidden)
+		if errors.Is(err, ErrUserNotFound) {
+			return v1.NewRequestError(err, http.StatusNotFound)
+		}
+		return fmt.Errorf("get user by uuid err: %w", err)
 	}
 
-	err = web.Response(ctx, w, http.StatusOK, struct {
+	return web.Response(ctx, w, http.StatusOK, struct {
 		Status string `json:"status"`
-	}{"ok"})
-	if err != nil {
-		return v1.NewRequestError(err, http.StatusInternalServerError)
-	}
-
-	return nil
+	}{
+		Status: "ok",
+	})
 }
 
 // Private
@@ -118,6 +114,15 @@ func getUser(name, pass string) (user, error) {
 			if err != nil {
 				return user{}, ErrUserNotAuthenticated
 			}
+			return u, nil
+		}
+	}
+	return user{}, ErrUserNotFound
+}
+
+func getUserByUUID(uuid string) (user, error) {
+	for _, u := range users {
+		if u.uuid == uuid {
 			return u, nil
 		}
 	}

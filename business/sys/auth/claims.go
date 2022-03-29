@@ -32,11 +32,13 @@ func GetClaims(ctx context.Context) (Claims, error) {
 
 // TODO: Make permission mechanism a bit more flexible
 
-func Authorize(claims Claims, fn func(resource, action string) bool) error {
-	for _, permission := range claims.Permissions {
-		resource, action := decodePermission(permission)
+func Authorize(claims Claims, permission string) error {
+	resource, action := decodePermission(permission)
 
-		if fn(resource, action) {
+	for _, cp := range claims.Permissions {
+		cr, ca := decodePermission(cp)
+
+		if resource == cr && action == ca {
 			return nil
 		}
 	}

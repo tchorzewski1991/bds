@@ -23,5 +23,8 @@ func Routes(app *web.App, cfg Config) {
 
 	// User handlers
 	app.Handle(http.MethodPost, version, "/user/token", uh.Token)
-	app.Handle(http.MethodGet, version, "/user/protected", uh.Protected, mid.Authenticate())
+	app.Handle(http.MethodGet, version, "/user/protected", uh.Protected,
+		mid.Authenticate(),
+		mid.Authorize("user.protected"),
+	)
 }
