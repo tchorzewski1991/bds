@@ -36,9 +36,12 @@ func (a *App) Shutdown() {
 	a.shutdown <- syscall.SIGTERM
 }
 
-func (a *App) Handle(method string, version string, path string, handler Handler) {
+func (a *App) Handle(method string, version string, path string, handler Handler, mw ...Middleware) {
 
-	// Wrap handler with application level middleware
+	// Wrap handler specific middleware.
+	handler = wrapMiddleware(mw, handler)
+
+	// Wrap handler with application level middleware.
 	handler = wrapMiddleware(a.mw, handler)
 
 	// Prepare the function to execute for each request.
