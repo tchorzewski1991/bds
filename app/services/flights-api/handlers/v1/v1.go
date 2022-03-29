@@ -17,12 +17,11 @@ type Config struct {
 
 // Routes binds all the routes for API version 1
 func Routes(app *web.App, cfg Config) {
+	// Flight handlers
 	app.Handle(http.MethodGet, version, "/flights", fh.List)
 	app.Handle(http.MethodGet, version, "/flights/:id", fh.QueryByID)
 
-	// The following endpoint exists just for testing.
-	// It will be removed after properly developed authorization mechanism.
-	app.Handle(http.MethodGet, version, "/protected", fh.Protected, mid.Authenticate())
-
+	// User handlers
 	app.Handle(http.MethodPost, version, "/user/token", uh.Token)
+	app.Handle(http.MethodGet, version, "/user/protected", uh.Protected, mid.Authenticate())
 }
