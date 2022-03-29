@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/dimfeld/httptreemux/v5"
 	"github.com/tchorzewski1991/fds/base/web"
+	"github.com/tchorzewski1991/fds/business/sys/auth"
 	v1 "github.com/tchorzewski1991/fds/business/web/v1"
 	"net/http"
 )
@@ -41,7 +42,38 @@ func QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) erro
 	return nil
 }
 
+func Protected(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+
+	// Get claims out of the ctx.
+	// At this point we should always have them available.
+	// They are set through auth middleware.
+	claims, err := auth.GetClaims(ctx)
+	if err != nil {
+		return v1.NewRequestError(err, http.StatusForbidden)
+	}
+
+	// Ensure claims owner is authorized to perform the action on the resource.
+	err = auth.Authorize(claims, func(resource, action string) bool {
+		return resource == "flights" && action == "protected"
+	})
+	if err != nil {
+		return v1.NewRequestError(err, http.StatusForbidden)
+	}
+
+	err = web.Response(ctx, w, http.StatusOK, struct {
+		Status string `json:"status"`
+	}{"ok"})
+	if err != nil {
+		return v1.NewRequestError(err, http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
 // private
+
+// Section flight
+// TODO: Move to separate package
 
 type flight struct {
 	Identifier string `json:"identifier"`
