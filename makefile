@@ -26,6 +26,10 @@ monitor:
 	go install github.com/divan/expvarmon@latest
 	expvarmon -ports="4000" -vars="requests,goroutines,errors,panics"
 
+gentoken:
+	# -sub=X (user by default) -iss=X (fds-toolset by default) -dur=X (1h by default) -perm=X ("" by default)
+	go run app/services/tools/gentoken/main.go
+
 # =============================================================================
 # Docker containers section
 VERSION := 1.0
