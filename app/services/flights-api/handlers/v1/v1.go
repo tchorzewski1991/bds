@@ -2,6 +2,7 @@ package v1
 
 import (
 	fh "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v1/flight"
+	uh "github.com/tchorzewski1991/fds/app/services/flights-api/handlers/v1/user"
 	"github.com/tchorzewski1991/fds/base/web"
 	"github.com/tchorzewski1991/fds/business/web/v1/mid"
 	"go.uber.org/zap"
@@ -23,5 +24,5 @@ func Routes(app *web.App, cfg Config) {
 	// It will be removed after properly developed authorization mechanism.
 	app.Handle(http.MethodGet, version, "/protected", fh.Protected, mid.Authenticate())
 
-	app.Handle(http.MethodPost, version, "/token", fh.Token)
+	app.Handle(http.MethodPost, version, "/user/token", uh.Token)
 }
