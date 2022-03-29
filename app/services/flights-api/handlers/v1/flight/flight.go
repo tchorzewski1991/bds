@@ -90,9 +90,9 @@ func Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserNotFound):
-			return v1.NewRequestError(errors.New("user not found"), http.StatusNotFound)
+			return v1.NewRequestError(err, http.StatusNotFound)
 		case errors.Is(err, ErrUserNotAuthenticated):
-			return v1.NewRequestError(errors.New("user not authenticated"), http.StatusUnauthorized)
+			return v1.NewRequestError(err, http.StatusUnauthorized)
 		default:
 			return fmt.Errorf("authentication err: %w", err)
 		}
