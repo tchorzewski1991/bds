@@ -9,6 +9,9 @@ github.com/dimfeld/httptreemux/v5
 github.com/emadolsky/automaxprocs/internal/cgroups
 github.com/emadolsky/automaxprocs/internal/runtime
 github.com/emadolsky/automaxprocs/maxprocs
+# github.com/golang-jwt/jwt/v4 v4.4.0
+## explicit; go 1.15
+github.com/golang-jwt/jwt/v4
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
@@ -32,3 +35,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
+# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+## explicit
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
