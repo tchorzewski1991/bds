@@ -21,7 +21,7 @@ func Routes(app *web.App, cfg Config) {
 
 	// The following endpoint exists just for testing.
 	// It will be removed after properly developed authorization mechanism.
-	app.Handle(http.MethodGet, version, "/protected", fh.Protected, mid.Auth())
+	app.Handle(http.MethodGet, version, "/protected", fh.Protected, mid.Authenticate())
 
 	app.Handle(http.MethodPost, version, "/token", fh.Token)
 }

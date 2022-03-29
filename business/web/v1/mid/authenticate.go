@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func Auth() web.Middleware {
+func Authenticate() web.Middleware {
 
 	// m is the middleware function to be executed.
 	m := func(handler web.Handler) web.Handler {
