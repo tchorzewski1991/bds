@@ -2,8 +2,8 @@ package mid
 
 import (
 	"context"
-	"github.com/tchorzewski1991/fds/base/web"
-	v1 "github.com/tchorzewski1991/fds/business/web/v1"
+	"github.com/tchorzewski1991/bds/base/web"
+	v1 "github.com/tchorzewski1991/bds/business/web/v1"
 	"go.uber.org/zap"
 	"net/http"
 )

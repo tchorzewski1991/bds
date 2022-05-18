@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/tchorzewski1991/fds/business/sys/auth"
+	"github.com/tchorzewski1991/bds/business/sys/auth"
 	"os"
 	"strings"
 	"time"
@@ -16,7 +16,7 @@ func main() {
 	flag.StringVar(&sub, "sub", "user", "Subject of the JWT (the user)")
 
 	var iss string
-	flag.StringVar(&iss, "iss", "fds-toolset", "Issuer of the JWT")
+	flag.StringVar(&iss, "iss", "bds-toolset", "Issuer of the JWT")
 
 	var dur time.Duration
 	flag.DurationVar(&dur, "dur", time.Hour, "Duration of the token validity")

@@ -1,0 +1,6 @@
+{
+  "name": "prometheus",
+  "type": "prometheus",
+  "url": "http://bds-prometheus:9090",
+  "access": "proxy"
+}

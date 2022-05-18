@@ -1,4 +1,4 @@
-module github.com/tchorzewski1991/fds
+module github.com/tchorzewski1991/bds
 
 go 1.17
 

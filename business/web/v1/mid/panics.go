@@ -3,8 +3,8 @@ package mid
 import (
 	"context"
 	"fmt"
-	"github.com/tchorzewski1991/fds/base/web"
-	"github.com/tchorzewski1991/fds/business/sys/metrics"
+	"github.com/tchorzewski1991/bds/base/web"
+	"github.com/tchorzewski1991/bds/business/sys/metrics"
 	"net/http"
 	"runtime/debug"
 )

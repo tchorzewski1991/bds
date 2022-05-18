@@ -1,0 +1,67 @@
+version: "3"
+services:
+  books-api:
+    build:
+      context: ../../
+      dockerfile: ./infra/docker/dockerfile.books-api
+    container_name: "books-api"
+    networks:
+      - bds-net
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bds
+    networks:
+      - bds-net
+
+  grafana:
+    image: grafana/grafana
+    container_name: "bds-grafana"
+    networks:
+      - bds-net
+    depends_on:
+      - prometheus
+    ports:
+      - "5000:3000"
+    environment:
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+
+  grafana-setup:
+    image: alpine:3.10
+    depends_on:
+      - grafana
+    volumes:
+      - ./grafana:/grafana
+    command: >
+      /bin/sh -c "
+        apk add --no-cache curl
+        echo 'waiting for grafana'
+        sleep 5s
+        cd /grafana
+        curl --request POST http://grafana:3000/api/datasources --header 'Content-Type: application/json' -d @datasources.json"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: "bds-prometheus"
+    networks:
+      - bds-net
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ../prometheus:/etc/prometheus
+
+networks:
+  bds-net:
