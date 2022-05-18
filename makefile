@@ -1,13 +1,13 @@
-APP=fds
+APP=bds
 
 # =============================================================================
 # Local development section
 
 run: 
-	go run app/services/flights-api/main.go | go run app/services/tools/fmt/main.go
+	go run app/services/books-api/main.go | go run app/services/tools/fmt/main.go
 
 build:
-	go build -o $(APP) -ldflags '-X main.build=local' ./app/services/flights-api
+	go build -o $(APP) -ldflags '-X main.build=local' ./app/services/books-api
 
 clean:
 	@echo "  >  Cleaning build cache"
@@ -27,19 +27,25 @@ monitor:
 	expvarmon -ports="4000" -vars="requests,goroutines,errors,panics"
 
 gentoken:
-	# -sub=X (user by default) -iss=X (fds-toolset by default) -dur=X (1h by default) -perm=X ("" by default)
+	# -sub=X (user by default) -iss=X (bds-toolset by default) -dur=X (1h by default) -perm=X ("" by default)
 	go run app/services/tools/gentoken/main.go
+
+dblab:
+	dblab --host localhost --user postgres --pass password --ssl disable --port 5432 --driver postgres
+
+dbmigrate:
+	go run app/services/tools/dbmigrate/main.go
 
 # =============================================================================
 # Docker containers section
 VERSION := 1.0
 
-all: flights-api
+all: books-api
 
-flights-api:
+books-api:
 	docker build \
-		-f infra/docker/dockerfile.flights-api \
-		-t flights-api-amd64:$(VERSION) \
+		-f infra/docker/dockerfile.books-api \
+		-t books-api-amd64:$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		--build-arg BUILD_REF=$(VERSION) \
 		.
@@ -56,13 +62,13 @@ docker-kind-logs:
 # =============================================================================
 # Running withing k8s cluster
 
-KIND_CLUSTER := fds-cluster
+KIND_CLUSTER := bds-cluster
 
 kind-up:
 	kind create cluster \
 		--name $(KIND_CLUSTER) \
 		--config infra/k8s/kind/kind-config.yaml
-	kubectl config set-context --current --namespace=flights-system
+	kubectl config set-context --current --namespace=books-system
 
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
@@ -72,25 +78,34 @@ kind-status:
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
-kind-status-flights-system:
-	kubectl get pods -o wide --watch
+kind-status-books:
+	kubectl get pods -o wide --watch --namespace=books-system
+
+kind-status-db:
+	kubectl get pods -o wide --watch --namespace=database-system
 
 kind-load:
-	cd infra/k8s/kind/flights-pod; kustomize edit set image flights-api-image=flights-api-amd64:$(VERSION)
-	kind load docker-image flights-api-amd64:$(VERSION) --name $(KIND_CLUSTER)
+	cd infra/k8s/kind/books-pod; kustomize edit set image books-api-image=books-api-amd64:$(VERSION)
+	kind load docker-image books-api-amd64:$(VERSION) --name $(KIND_CLUSTER)
 
 kind-apply:
-	kustomize build infra/k8s/kind/flights-pod/ | kubectl apply -f -
+	kustomize build infra/k8s/kind/database-pod | kubectl apply -f -
+	kubectl wait --namespace=database-system --timeout=120s --for=condition=Available deployment/database-pod
+	kustomize build infra/k8s/kind/books-pod/ | kubectl apply -f -
 
 kind-logs:
-	kubectl logs -l app=flights --all-containers=true -f --tail=100 | go run app/services/tools/fmt/main.go
+	#kubectl logs -l app=books --all-containers=true -f --tail=100 | go run app/services/tools/fmt/main.go
+	kubectl logs -l app=books --all-containers=true -f --tail=100
 
 kind-restart:
-	kubectl rollout restart deployment flights-pod
+	kubectl rollout restart deployment books-pod
 
 kind-update: all kind-load kind-restart
 
 kind-update-apply: all kind-load kind-apply
 
 kind-describe:
-	kubectl describe pod -l app=flights
+	kubectl describe pod -l app=books
+
+kind-access-db:
+	kubectl exec -it $(shell kubectl get pods --namespace database-system --output=jsonpath={.items..metadata.name}) --namespace=database-system -- psql -d postgres -U postgres

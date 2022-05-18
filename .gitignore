@@ -1,6 +1,6 @@
 # Binaries
-app/services/fds-api/fds-api
-app/tooling/fds-admin/fds-admin
+app/services/bds-api/bds-api
+app/tooling/bds-admin/bds-admin
 
 # Mac
 .DS_Store
@@ -37,4 +37,4 @@ _testmain.go
 *.exe
 //*.test
 .vscode/tasks.json
-fds.code-workspace
+bds.code-workspace

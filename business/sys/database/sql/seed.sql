@@ -1,0 +1,2 @@
+insert into users (uuid, email, permissions, password_hash, date_created, date_updated) values
+        ('0acbcd58-4b37-4eba-a108-69ee264eb35a', 'bds@admin.com', '{user.profile}', '$2a$10$ERU2RlhuGO7ymjOp7MwrKOJ4g2KVVpWxw.BForFe02j88UgvF5vga', now(), now())

@@ -1,0 +1,37 @@
+# Build go binary
+FROM golang:1.17.7-alpine3.15 as build_flights-api
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+
+COPY . /bds
+
+WORKDIR /bds/app/services/books-api
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+WORKDIR /bds/app/services/tools/dbmigrate
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+WORKDIR /bds/app/services/tools/dbseed
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+WORKDIR /bds/app/services/tools/genschema
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+# Run the go binary in alpine.
+FROM alpine:3.15
+
+ARG BUILD_DATE
+ARG BUILD_REF
+
+COPY --from=build_flights-api /bds/app/services/books-api/books-api /services/books-api
+COPY --from=build_flights-api /bds/app/services/tools/dbmigrate/dbmigrate /services/tools/dbmigrate
+COPY --from=build_flights-api /bds/app/services/tools/dbseed/dbseed /services/tools/dbseed
+COPY --from=build_flights-api /bds/app/services/tools/genschema/genschema /services/tools/genschema
+
+WORKDIR /services
+
+RUN chmod +x tools/dbmigrate
+RUN chmod +x tools/dbseed
+RUN chmod +x tools/genschema
+
+CMD ["./books-api"]
