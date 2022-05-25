@@ -67,7 +67,7 @@ func (c Core) Authenticate(ctx context.Context, email, pass string) (auth.Claims
 		if errors.Is(err, db.ErrUserNotFound) {
 			return auth.Claims{}, ErrNotFound
 		}
-		return auth.Claims{}, fmt.Errorf("query failed: %w", err)
+		return auth.Claims{}, fmt.Errorf("authenticate failed: %w", err)
 	}
 
 	err = checkPass(user, pass)

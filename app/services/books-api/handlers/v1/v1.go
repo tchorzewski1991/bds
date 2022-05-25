@@ -5,6 +5,7 @@ import (
 	bh "github.com/tchorzewski1991/bds/app/services/books-api/handlers/v1/book"
 	uh "github.com/tchorzewski1991/bds/app/services/books-api/handlers/v1/user"
 	"github.com/tchorzewski1991/bds/base/web"
+	"github.com/tchorzewski1991/bds/business/core/book"
 	"github.com/tchorzewski1991/bds/business/core/user"
 	"github.com/tchorzewski1991/bds/business/web/v1/mid"
 	"go.uber.org/zap"
@@ -21,8 +22,9 @@ type Config struct {
 // Routes binds all the routes for API version 1
 func Routes(app *web.App, cfg Config) {
 	// Book handlers group
-	app.Handle(http.MethodGet, version, "/books", bh.List)
-	app.Handle(http.MethodGet, version, "/books/:id", bh.QueryByID)
+	bhg := bh.Handler{Book: book.NewCore(cfg.DB, cfg.Logger)}
+	app.Handle(http.MethodGet, version, "/books", bhg.List)
+	app.Handle(http.MethodGet, version, "/books/:id", bhg.QueryByID)
 
 	// User handlers group
 	uhg := uh.Handler{User: user.NewCore(cfg.DB, cfg.Logger)}

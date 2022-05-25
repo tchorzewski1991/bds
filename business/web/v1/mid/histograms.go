@@ -22,7 +22,7 @@ func Histograms() web.Middleware {
 			}
 
 			// Prepare and send http histogram
-			m := metrics.NewHttpHistogram(r, v)
+			m := metrics.HttpHistogram(r, v)
 			defer m.Send()
 
 			return handler(ctx, w, r)

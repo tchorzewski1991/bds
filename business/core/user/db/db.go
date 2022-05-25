@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/tchorzewski1991/bds/business/sys/database"
-	"github.com/tchorzewski1991/bds/business/sys/metrics"
 	"go.uber.org/zap"
 )
 
@@ -26,8 +25,9 @@ func (s Store) QueryByUUID(ctx context.Context, uuid string) (User, error) {
 		Uuid string `db:"uuid"`
 	}{Uuid: uuid}
 
-	ext := s.db.WithErrorMapper(database.DefaultErrorMapper).
-		WithMetric(metrics.NewDBHistogram("QueryByUUID"))
+	ext := s.db.
+		WithErrorMapper(database.NewErrorMapper()).
+		WithMetric(database.NewHistogram("users", "QueryByUUID"))
 
 	rows, err := sqlx.NamedQueryContext(ctx, ext, q, data)
 	if err != nil {
@@ -55,8 +55,9 @@ func (s Store) QueryByEmail(ctx context.Context, email string) (User, error) {
 		Email string `db:"email"`
 	}{Email: email}
 
-	ext := s.db.WithErrorMapper(database.DefaultErrorMapper).
-		WithMetric(metrics.NewDBHistogram("QueryByEmail"))
+	ext := s.db.
+		WithErrorMapper(database.NewErrorMapper()).
+		WithMetric(database.NewHistogram("users", "QueryByEmail"))
 
 	rows, err := sqlx.NamedQueryContext(ctx, ext, q, data)
 	if err != nil {

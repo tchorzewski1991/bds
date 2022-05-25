@@ -30,7 +30,11 @@ func (ec *ExtContext) WithLogger(logger *zap.SugaredLogger) *ExtContext {
 	return ec
 }
 
-func (ec *ExtContext) WithMetric(metric *metrics.DbHistogram) *ExtContext {
+type Metric interface {
+	Send()
+}
+
+func (ec *ExtContext) WithMetric(metric Metric) *ExtContext {
 	ec.interceptors = append(ec.interceptors, metricInterceptor(metric))
 	return ec
 }
@@ -40,11 +44,17 @@ func (ec *ExtContext) WithErrorMapper(mapper ErrorMapper) *ExtContext {
 	return ec
 }
 
-func DefaultErrorMapper(err error) error {
-	if errors.Is(err, sql.ErrNoRows) {
-		return ErrNotFound
+func NewErrorMapper() ErrorMapper {
+	return func(err error) error {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return err
 	}
-	return err
+}
+
+func NewHistogram(table, operation string) *metrics.Histogram {
+	return metrics.DbHistogram(table, operation)
 }
 
 func loggerInterceptor(logger *zap.SugaredLogger) interceptor {
@@ -63,7 +73,7 @@ func loggerInterceptor(logger *zap.SugaredLogger) interceptor {
 	return i
 }
 
-func metricInterceptor(metric *metrics.DbHistogram) interceptor {
+func metricInterceptor(metric Metric) interceptor {
 
 	i := func(handler handler) handler {
 
