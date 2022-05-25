@@ -3,10 +3,13 @@ package book
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/dimfeld/httptreemux/v5"
 	"github.com/tchorzewski1991/bds/base/web"
+	"github.com/tchorzewski1991/bds/business/core/book"
 	v1 "github.com/tchorzewski1991/bds/business/web/v1"
 	"net/http"
+	"strconv"
 )
 
 // Notes on HTTP handlers:
@@ -15,52 +18,68 @@ import (
 // - There is a bunch of details we want to keep consistent between each of these handlers
 //   like: logging, error handling or JSON marshaling protocol.
 
-func List(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
-	err := web.Response(ctx, w, http.StatusOK, books)
+type Handler struct {
+	Book book.Core
+}
+
+func (h Handler) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	query := r.URL.Query()
+
+	var err error
+	var page int
+	var rowsPerPage int
+
+	if v := query.Get("page"); v != "" {
+		page, err = strconv.Atoi(v)
+		if err != nil {
+			return v1.NewRequestError(fmt.Errorf("page param is not valid: %w", err), http.StatusBadRequest)
+		}
+	}
+	if page < 1 {
+		page = 1
+	}
+
+	if v := query.Get("rows"); v != "" {
+		rowsPerPage, err = strconv.Atoi(v)
+		if err != nil {
+			return v1.NewRequestError(fmt.Errorf("rows param is not valid: %w", err), http.StatusBadRequest)
+		}
+	}
+	if rowsPerPage < 1 || rowsPerPage > 20 {
+		rowsPerPage = 20
+	}
+
+	books, err := h.Book.Query(ctx, page, rowsPerPage)
 	if err != nil {
+		return fmt.Errorf("unable to query books: %w", err)
+	}
+
+	return web.Response(ctx, w, http.StatusOK, struct {
+		Page  int         `json:"page"`
+		Rows  int         `json:"rows"`
+		Books []book.Book `json:"books"`
+	}{
+		Page:  page,
+		Rows:  rowsPerPage,
+		Books: books,
+	})
+}
+
+func (h Handler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	params := httptreemux.ContextParams(r.Context())
+
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		return v1.NewRequestError(fmt.Errorf("id param is not valid: %w", err), http.StatusBadRequest)
+	}
+
+	b, err := h.Book.QueryByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, book.ErrNotFound) {
+			return v1.NewRequestError(err, http.StatusNotFound)
+		}
 		return err
 	}
 
-	return nil
-}
-
-func QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	data := httptreemux.ContextData(r.Context())
-	params := data.Params()
-
-	f, err := getBook(params["id"])
-	if err != nil {
-		return v1.NewRequestError(err, http.StatusNotFound)
-	}
-
-	err = web.Response(ctx, w, http.StatusOK, f)
-	if err != nil {
-		return v1.NewRequestError(err, http.StatusInternalServerError)
-	}
-
-	return nil
-}
-
-// private
-
-// Section book
-// TODO: Move to separate package
-
-type book struct {
-	Identifier string `json:"identifier"`
-}
-
-var books = []book{
-	{
-		Identifier: "1111",
-	},
-}
-
-func getBook(identifier string) (book, error) {
-	for _, b := range books {
-		if b.Identifier == identifier {
-			return b, nil
-		}
-	}
-	return book{}, errors.New("book not found")
+	return web.Response(ctx, w, http.StatusOK, b)
 }

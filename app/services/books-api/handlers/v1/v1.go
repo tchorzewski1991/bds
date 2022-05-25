@@ -23,7 +23,7 @@ type Config struct {
 func Routes(app *web.App, cfg Config) {
 	// Book handlers group
 	bhg := bh.Handler{Book: book.NewCore(cfg.DB, cfg.Logger)}
-	app.Handle(http.MethodGet, version, "/books", bhg.List)
+	app.Handle(http.MethodGet, version, "/books", bhg.Query)
 	app.Handle(http.MethodGet, version, "/books/:id", bhg.QueryByID)
 
 	// User handlers group
