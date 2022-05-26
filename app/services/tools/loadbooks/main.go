@@ -27,12 +27,20 @@ func run() error {
 	start := time.Now()
 
 	var source string
-	flag.StringVar(&source, "source", "", "Source file with books to be parsed and inserted into db")
+	flag.StringVar(&source, "source", "", "The source file with books to be inserted into db.")
+
+	var bufferSize int
+	flag.IntVar(&bufferSize, "buffer", 10_000, "The size of books buffer used within single db tx.")
 
 	flag.Parse()
 
 	if source == "" {
 		fmt.Println("ERR: source cannot be empty")
+		os.Exit(1)
+	}
+
+	if bufferSize < 2 || bufferSize > 50_000 {
+		fmt.Println("ERR: buffer size is not valid")
 		os.Exit(1)
 	}
 
@@ -70,44 +78,89 @@ func run() error {
 		os.Exit(1)
 	}
 
-	var entry []string
-
 	stats := struct {
 		total   int
 		success int
-		fail    int
-	}{0, 0, 0}
+		failure int
+		retries int
+	}{0, 0, 0, 0}
+
+	bufferPos := 0
+	buffer := make([][]string, 0, bufferSize)
+
+	var tx *sqlx.Tx
+
+	releaseBuffer := func() (success, failure int) {
+		tx, err = db.Beginx()
+		if err != nil {
+			return success, failure
+		}
+
+		for idx := range buffer {
+			err = save(tx, buffer[idx])
+			if err != nil {
+				failure += 1
+				continue
+			}
+			success += 1
+		}
+
+		tx.Commit()
+
+		return success, failure
+	}
+
+	var row []string
 
 	for {
-		stats.total += 1
+		if len(buffer) < bufferSize {
+			row, err = r.Read()
+			if err == io.EOF {
+				success, failure := releaseBuffer()
+				stats.success += success
+				stats.failure += failure
+				stats.total += success + failure
+				break
+			}
+			if err != nil {
+				stats.retries += 1
+				continue
+			}
 
-		entry, err = r.Read()
-		if err == io.EOF {
-			stats.total -= 1
-			break
-		}
-		if err != nil {
-			stats.fail += 1
+			buffer = append(buffer, row)
+			bufferPos += 1
 			continue
 		}
 
-		err = save(db, entry)
-		if err != nil {
-			stats.fail += 1
-			continue
-		}
+		success, failure := releaseBuffer()
 
-		stats.success += 1
+		stats.success += success
+		stats.failure += failure
+		stats.total += success + failure
+
+		buffer = make([][]string, 0, bufferSize)
+		bufferPos = 0
+
+		if stats.total%10_000 == 0 {
+			fmt.Printf("Books loaded. Stats: %+v\n", stats)
+		}
 	}
 
 	end := time.Since(start)
-
 	fmt.Printf("Books loaded. Stats: %+v | Took: %v\n", stats, end)
 
 	return nil
 }
 
-func save(db *sqlx.DB, entry []string) error {
+type Book struct {
+	Isbn            string `db:"isbn"`
+	Title           string `db:"title"`
+	Author          string `db:"author"`
+	PublicationYear string `db:"publication_year"`
+	Publisher       string `db:"publisher"`
+}
+
+func save(tx *sqlx.Tx, entry []string) error {
 	const q = `
 		insert into books
      		(isbn, title, author, publication_year, publisher)
@@ -115,13 +168,7 @@ func save(db *sqlx.DB, entry []string) error {
 		    (:isbn, :title, :author, :publication_year, :publisher)
 	`
 
-	data := struct {
-		Isbn            string `db:"isbn"`
-		Title           string `db:"title"`
-		Author          string `db:"author"`
-		PublicationYear string `db:"publication_year"`
-		Publisher       string `db:"publisher"`
-	}{
+	data := Book{
 		Isbn:            entry[0],
 		Title:           entry[1],
 		Author:          entry[2],
@@ -129,10 +176,32 @@ func save(db *sqlx.DB, entry []string) error {
 		Publisher:       entry[4],
 	}
 
-	_, err := db.NamedExec(q, data)
+	_, err := tx.NamedExec(q, data)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
+
+//for {
+//	stats.total += 1
+//
+//	entry, err = r.Read()
+//	if err == io.EOF {
+//		stats.total -= 1
+//		break
+//	}
+//	if err != nil {
+//		stats.fail += 1
+//		continue
+//	}
+//
+//	err = save(db, entry)
+//	if err != nil {
+//		stats.fail += 1
+//		continue
+//	}
+//
+//	stats.success += 1
+//}
