@@ -183,25 +183,3 @@ func save(tx *sqlx.Tx, entry []string) error {
 
 	return nil
 }
-
-//for {
-//	stats.total += 1
-//
-//	entry, err = r.Read()
-//	if err == io.EOF {
-//		stats.total -= 1
-//		break
-//	}
-//	if err != nil {
-//		stats.fail += 1
-//		continue
-//	}
-//
-//	err = save(db, entry)
-//	if err != nil {
-//		stats.fail += 1
-//		continue
-//	}
-//
-//	stats.success += 1
-//}
