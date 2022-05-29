@@ -21,27 +21,16 @@ type Opt func(extContext *ExtContext)
 
 type ErrorMapper func(err error) error
 
-func NewExtContext(extContext sqlx.ExtContext) *ExtContext {
-	return &ExtContext{extContext: extContext}
-}
-
-func (ec *ExtContext) WithLogger(logger *zap.SugaredLogger) *ExtContext {
-	ec.interceptors = append(ec.interceptors, loggerInterceptor(logger))
-	return ec
-}
-
 type Metric interface {
 	Send()
 }
 
-func (ec *ExtContext) WithMetric(metric Metric) *ExtContext {
-	ec.interceptors = append(ec.interceptors, metricInterceptor(metric))
-	return ec
+func NewExtContext(extContext sqlx.ExtContext) *ExtContext {
+	return &ExtContext{extContext: extContext}
 }
 
-func (ec *ExtContext) WithErrorMapper(mapper ErrorMapper) *ExtContext {
-	ec.interceptors = append(ec.interceptors, errorMapperInterceptor(mapper))
-	return ec
+func NewHistogram(table, operation string) *metrics.Histogram {
+	return metrics.DbHistogram(table, operation)
 }
 
 func NewErrorMapper() ErrorMapper {
@@ -53,8 +42,19 @@ func NewErrorMapper() ErrorMapper {
 	}
 }
 
-func NewHistogram(table, operation string) *metrics.Histogram {
-	return metrics.DbHistogram(table, operation)
+func (ec *ExtContext) WithLogger(logger *zap.SugaredLogger) *ExtContext {
+	ec.interceptors = append(ec.interceptors, loggerInterceptor(logger))
+	return ec
+}
+
+func (ec *ExtContext) WithMetric(metric Metric) *ExtContext {
+	ec.interceptors = append(ec.interceptors, metricInterceptor(metric))
+	return ec
+}
+
+func (ec *ExtContext) WithErrorMapper(mapper ErrorMapper) *ExtContext {
+	ec.interceptors = append(ec.interceptors, errorMapperInterceptor(mapper))
+	return ec
 }
 
 func loggerInterceptor(logger *zap.SugaredLogger) interceptor {
