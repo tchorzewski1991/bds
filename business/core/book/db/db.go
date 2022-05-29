@@ -23,7 +23,7 @@ func (s Store) QueryByID(ctx context.Context, id int) (Book, error) {
 
 	ext := s.db.
 		WithErrorMapper(database.NewErrorMapper()).
-		WithMetric(database.NewHistogram("books", "QueryByID"))
+		WithMetric(database.NewMetric("books", "QueryByID"))
 
 	rows, err := sqlx.NamedQueryContext(ctx, ext, q, map[string]interface{}{
 		"id": id,
@@ -61,7 +61,7 @@ func (s Store) Query(ctx context.Context, page int, rowsPerPage int) ([]Book, er
 
 	ext := s.db.
 		WithErrorMapper(database.NewErrorMapper()).
-		WithMetric(database.NewHistogram("books", "Query"))
+		WithMetric(database.NewMetric("books", "Query"))
 
 	rows, err := sqlx.NamedQueryContext(ctx, ext, q, map[string]interface{}{
 		"offset":        (page - 1) * rowsPerPage,

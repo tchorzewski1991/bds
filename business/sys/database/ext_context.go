@@ -29,7 +29,7 @@ func NewExtContext(extContext sqlx.ExtContext) *ExtContext {
 	return &ExtContext{extContext: extContext}
 }
 
-func NewHistogram(table, operation string) *metrics.Histogram {
+func NewMetric(table, operation string) Metric {
 	return metrics.DbHistogram(table, operation)
 }
 

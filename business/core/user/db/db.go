@@ -27,7 +27,7 @@ func (s Store) QueryByUUID(ctx context.Context, uuid string) (User, error) {
 
 	ext := s.db.
 		WithErrorMapper(database.NewErrorMapper()).
-		WithMetric(database.NewHistogram("users", "QueryByUUID"))
+		WithMetric(database.NewMetric("users", "QueryByUUID"))
 
 	rows, err := sqlx.NamedQueryContext(ctx, ext, q, data)
 	if err != nil {
@@ -57,7 +57,7 @@ func (s Store) QueryByEmail(ctx context.Context, email string) (User, error) {
 
 	ext := s.db.
 		WithErrorMapper(database.NewErrorMapper()).
-		WithMetric(database.NewHistogram("users", "QueryByEmail"))
+		WithMetric(database.NewMetric("users", "QueryByEmail"))
 
 	rows, err := sqlx.NamedQueryContext(ctx, ext, q, data)
 	if err != nil {
