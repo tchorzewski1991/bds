@@ -2,13 +2,10 @@ package db
 
 import (
 	"context"
-	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 )
-
-var ErrUserNotFound = errors.New("user not found")
 
 type Store struct {
 	db *database.ExtContext
@@ -36,7 +33,7 @@ func (s Store) QueryByUUID(ctx context.Context, uuid string) (User, error) {
 	defer rows.Close()
 
 	if !rows.Next() {
-		return User{}, ErrUserNotFound
+		return User{}, database.ErrNotFound
 	}
 
 	var user User
@@ -66,7 +63,7 @@ func (s Store) QueryByEmail(ctx context.Context, email string) (User, error) {
 	defer rows.Close()
 
 	if !rows.Next() {
-		return User{}, ErrUserNotFound
+		return User{}, database.ErrNotFound
 	}
 
 	var user User

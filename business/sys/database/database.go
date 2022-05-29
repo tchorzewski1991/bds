@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 	"github.com/ardanlabs/darwin"
 	"github.com/jmoiron/sqlx"
@@ -17,6 +18,11 @@ var (
 
 	//go:embed sql/seed.sql
 	seedDoc string
+)
+
+var (
+	ErrNotFound  = errors.New("entry not found")
+	ErrNotUnique = errors.New("entry not unique")
 )
 
 type Config struct {

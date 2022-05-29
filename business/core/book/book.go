@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/tchorzewski1991/bds/business/core/book/db"
+	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 )
 
@@ -30,7 +31,7 @@ func NewCore(sqlDB *sqlx.DB, logger *zap.SugaredLogger) Core {
 func (c Core) QueryByID(ctx context.Context, ID int) (Book, error) {
 	book, err := c.store.QueryByID(ctx, ID)
 	if err != nil {
-		if errors.Is(err, db.ErrBookNotFound) {
+		if errors.Is(err, database.ErrNotFound) {
 			return Book{}, ErrNotFound
 		}
 		return Book{}, fmt.Errorf("query failed: %w", err)

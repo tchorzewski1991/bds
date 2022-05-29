@@ -10,8 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var ErrNotFound = errors.New("entity not found")
-
 type ExtContext struct {
 	extContext   sqlx.ExtContext
 	interceptors []interceptor

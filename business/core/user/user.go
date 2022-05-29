@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/tchorzewski1991/bds/business/core/user/db"
 	"github.com/tchorzewski1991/bds/business/sys/auth"
+	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -43,7 +44,7 @@ func (c Core) QueryByUUID(ctx context.Context, uuid string) (User, error) {
 
 	user, err := c.store.QueryByUUID(ctx, uuid)
 	if err != nil {
-		if errors.Is(err, db.ErrUserNotFound) {
+		if errors.Is(err, database.ErrNotFound) {
 			return User{}, ErrNotFound
 		}
 		return User{}, fmt.Errorf("query failed: %w", err)
@@ -64,7 +65,7 @@ func (c Core) Authenticate(ctx context.Context, email, pass string) (auth.Claims
 
 	user, err := c.store.QueryByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, db.ErrUserNotFound) {
+		if errors.Is(err, database.ErrNotFound) {
 			return auth.Claims{}, ErrNotFound
 		}
 		return auth.Claims{}, fmt.Errorf("authenticate failed: %w", err)

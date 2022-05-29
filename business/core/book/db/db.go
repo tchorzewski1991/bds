@@ -2,13 +2,10 @@ package db
 
 import (
 	"context"
-	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 )
-
-var ErrBookNotFound = errors.New("book not found")
 
 type Store struct {
 	db *database.ExtContext
@@ -34,7 +31,7 @@ func (s Store) QueryByID(ctx context.Context, id int) (Book, error) {
 	defer rows.Close()
 
 	if !rows.Next() {
-		return Book{}, ErrBookNotFound
+		return Book{}, database.ErrNotFound
 	}
 
 	var book Book
