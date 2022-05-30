@@ -13,6 +13,8 @@ services:
     depends_on:
       - db
     restart: always
+    volumes:
+      - ./testdata:/testdata
 
   db:
     image: postgres
@@ -22,8 +24,6 @@ services:
       POSTGRES_DB: bds
     networks:
       - bds-net
-    volumes:
-      - ./testdata:/testdata
 
   grafana:
     image: grafana/grafana
