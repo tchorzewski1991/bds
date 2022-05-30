@@ -62,10 +62,9 @@ func ApiMux(cfg ApiMuxConfig) http.Handler {
 
 	app := web.NewApp(
 		cfg.Shutdown,
-		mid.Histograms(),
+		mid.Metrics(),
 		mid.Logger(cfg.Logger),
 		mid.Errors(cfg.Logger),
-		mid.Metrics(),
 		mid.Panics(),
 	)
 

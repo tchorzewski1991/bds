@@ -15,11 +15,21 @@ func Metrics() web.Middleware {
 		// h is the handler that will be attached in the middleware chain.
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 
-			// Extend current ctx with support for metrics gathering.
+			// Extend current ctx with support for expvar metrics gathering.
 			ctx = metrics.Set(ctx)
 
+			// Try to extract ctx values from ctx.
+			v, err := web.GetCtxValues(ctx)
+			if err != nil {
+				return web.NewShutdownError("cannot fetch values from context")
+			}
+
+			// Prepare and send http histogram
+			m := metrics.HttpHistogram(r, v)
+			defer m.Send()
+
 			// Call the next handler.
-			err := handler(ctx, w, r)
+			err = handler(ctx, w, r)
 
 			// Increment number of requests.
 			metrics.AddRequests(ctx)
