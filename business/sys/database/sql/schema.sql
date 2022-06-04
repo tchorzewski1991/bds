@@ -25,8 +25,9 @@ CREATE TABLE books (
    author           TEXT,
    publication_year TEXT,
    publisher        TEXT,
-   created_at       TIMESTAMP DEFAULT now(),
-   updated_at       TIMESTAMP DEFAULT now(),
+   created_at       TIMESTAMP NOT NULL DEFAULT now(),
+   updated_at       TIMESTAMP,
 
-   PRIMARY KEY (id)
+   PRIMARY KEY (id),
+   CONSTRAINT books_unique UNIQUE (isbn, title)
 );
