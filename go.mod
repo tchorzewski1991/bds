@@ -14,6 +14,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/lib/pq v1.2.0
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.12.1
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

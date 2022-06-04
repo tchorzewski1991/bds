@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 )
@@ -81,4 +82,34 @@ func (s Store) Query(ctx context.Context, page int, rowsPerPage int) ([]Book, er
 	}
 
 	return books, nil
+}
+
+func (s Store) Create(ctx context.Context, book Book) (id int, err error) {
+	const q = `
+		insert into books 
+			(isbn, title, author, publication_year, publisher, created_at)
+		values
+			(:isbn, :title, :author, :publication_year, :publisher, now())
+		returning id;
+	`
+
+	ext := s.db.
+		WithErrorMapper(database.NewErrorMapper()).
+		WithMetric(database.NewMetric("books", "Create"))
+
+	query, args, err := ext.BindNamed(q, book)
+	if err != nil {
+		return 0, err
+	}
+
+	err = ext.QueryRowxContext(ctx, query, args...).Scan(&id)
+	if err != nil {
+		// Checks if the error is of code 23505 (unique_violation).
+		if pqerr, ok := err.(*pq.Error); ok && pqerr.Code == database.UniqueViolation {
+			return 0, database.ErrNotUnique
+		}
+		return 0, err
+	}
+
+	return id, nil
 }

@@ -13,5 +13,5 @@ type Book struct {
 	PublicationYear sql.NullString `db:"publication_year"`
 	Publisher       sql.NullString `db:"publisher"`
 	CreatedAt       time.Time      `db:"created_at"`
-	UpdatedAt       time.Time      `db:"updated_at"`
+	UpdatedAt       sql.NullTime   `db:"updated_at"`
 }

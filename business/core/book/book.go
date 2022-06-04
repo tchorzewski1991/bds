@@ -2,16 +2,18 @@ package book
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"github.com/tchorzewski1991/bds/business/core/book/db"
 	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 )
 
 var (
-	ErrNotFound = errors.New("book not found")
+	ErrNotFound  = errors.New("book is not found")
+	ErrNotValid  = errors.New("book is not valid")
+	ErrNotUnique = errors.New("book is not unique")
 )
 
 // Core manages the set of APIs for book access.
@@ -45,6 +47,32 @@ func (c Core) Query(ctx context.Context, page int, rowsPerPage int) ([]Book, err
 		return nil, fmt.Errorf("query failed: %w", err)
 	}
 	return convertToBooks(books), nil
+}
+
+func (c Core) Create(ctx context.Context, nb NewBook) (Book, error) {
+	book := db.Book{
+		Isbn:            nb.Isbn,
+		Title:           nb.Title,
+		Author:          database.Str(nb.Author),
+		PublicationYear: database.Str(nb.PublicationYear),
+		Publisher:       database.Str(nb.Publisher),
+	}
+	err := sanityCheck(book)
+	if err != nil {
+		return Book{}, fmt.Errorf("create failed: %w", err)
+	}
+
+	id, err := c.store.Create(ctx, book)
+	if err != nil {
+		if errors.Is(err, database.ErrNotUnique) {
+			return Book{}, fmt.Errorf("create failed: %w", ErrNotUnique)
+		}
+		return Book{}, fmt.Errorf("create failed: %w", err)
+	}
+
+	book.ID = id
+
+	return convertToBook(book), nil
 }
 
 // private
@@ -83,4 +111,14 @@ func convertToBook(book db.Book) Book {
 		PublicationYear: publicationYear,
 		Publisher:       publisher,
 	}
+}
+
+func sanityCheck(book db.Book) error {
+	if book.Title == "" {
+		return FieldError{field: "title", err: "can't be blank"}
+	}
+	if book.Isbn == "" {
+		return FieldError{field: "isbn", err: "can't be blank"}
+	}
+	return nil
 }

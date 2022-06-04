@@ -25,6 +25,10 @@ var (
 	ErrNotUnique = errors.New("entry not unique")
 )
 
+// lib/pq errorCodeNames
+// https://github.com/lib/pq/blob/master/error.go#L178
+const UniqueViolation = "23505"
+
 type Config struct {
 	User string
 	Pass string
