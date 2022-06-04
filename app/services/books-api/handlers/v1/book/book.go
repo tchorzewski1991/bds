@@ -83,3 +83,26 @@ func (h Handler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.R
 
 	return web.Response(ctx, w, http.StatusOK, b)
 }
+
+func (h Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var nb book.NewBook
+	err := web.Decode(r, &nb)
+	if err != nil {
+		return v1.NewRequestError(err, http.StatusBadRequest)
+	}
+
+	b, err := h.Book.Create(ctx, nb)
+	if err != nil {
+		var fieldErr book.FieldError
+		if errors.As(err, &fieldErr) {
+			return v1.NewRequestError(fieldErr, http.StatusUnprocessableEntity)
+		}
+		if errors.Is(err, book.ErrNotUnique) {
+			return v1.NewRequestError(err, http.StatusConflict)
+		}
+
+		return err
+	}
+
+	return web.Response(ctx, w, http.StatusCreated, b)
+}

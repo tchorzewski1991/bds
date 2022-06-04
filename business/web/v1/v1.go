@@ -1,12 +1,16 @@
 package v1
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"net/http"
+)
 
 func NewRequestError(err error, status int) error {
 	return &RequestError{Err: err, Status: status}
 }
 
-// Request
+// Request error
 
 type RequestError struct {
 	Err    error
@@ -29,6 +33,38 @@ func GetRequestError(err error) *RequestError {
 		return nil
 	}
 	return re
+}
+
+// Fields error
+
+func NewFieldError(field, message string) FieldError {
+	return FieldError{Field: field, Message: message}
+}
+
+type FieldError struct {
+	Field   string
+	Message string
+}
+
+func (fe FieldError) Status() int {
+	return http.StatusUnprocessableEntity
+}
+
+func (fe FieldError) Error() string {
+	return fmt.Sprintf("%s %s", fe.Field, fe.Message)
+}
+
+func IsFieldError(err error) bool {
+	var fe FieldError
+	return errors.As(err, &fe)
+}
+
+func GetFieldError(err error) FieldError {
+	var fe FieldError
+	if !errors.As(err, &fe) {
+		return FieldError{}
+	}
+	return fe
 }
 
 // Response

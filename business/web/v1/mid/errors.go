@@ -31,6 +31,12 @@ func Errors(logger *zap.SugaredLogger) web.Middleware {
 
 				// Build out error response.
 				switch {
+				case v1.IsFieldError(err):
+					fErr := v1.GetFieldError(err)
+					er = v1.ErrorResponse{
+						Err:    fErr.Error(),
+						Status: fErr.Status(),
+					}
 				case v1.IsRequestError(err):
 					rErr := v1.GetRequestError(err)
 					er = v1.ErrorResponse{
