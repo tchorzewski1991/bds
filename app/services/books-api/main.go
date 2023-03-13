@@ -27,8 +27,8 @@ func main() {
 	// ================================================================================================================
 	// Set GOMAXPROCS
 
-	// Set the correct number of threads for the service
-	// based on what is available either by the machine or quotas.
+	// Set the correct number of threads for the service based on what is
+	// available either by the machine or quotas.
 	if _, err := maxprocs.Set(); err != nil {
 		fmt.Println("Setting maxprocs error: %w", err)
 	}
@@ -36,24 +36,23 @@ func main() {
 	_ = runtime.GOMAXPROCS(0)
 
 	// ================================================================================================================
-	// Construct application logger
+	// Configure app logger
 
-	// Set logger fields common to all logs
 	fields := []logger.Field{
 		{
 			Name: "service", Value: service,
 		},
 	}
-	// Create new logger
 	l, err := logger.New(fields...)
 	if err != nil {
 		fmt.Println("Constructing logger error:", err)
 		os.Exit(1)
 	}
-	// Flush logger buffer
-	defer l.Sync()
+	defer func() { _ = l.Sync() }()
 
-	// Run application
+	// ================================================================================================================
+	// Run app
+
 	if err = run(l); err != nil {
 		l.Errorf("Running app error: %s", err)
 		os.Exit(1)
@@ -63,7 +62,6 @@ func main() {
 func run(logger *zap.SugaredLogger) error {
 	// ================================================================================================================
 	// Configuration
-	logger.Info("Parsing config")
 
 	cfg := struct {
 		conf.Version
@@ -78,7 +76,7 @@ func run(logger *zap.SugaredLogger) error {
 		DB struct {
 			User string `conf:"default:postgres"`
 			Pass string `conf:"default:password,mask"`
-			Host string `conf:"default:db"`
+			Host string `conf:"default:localhost"`
 			Name string `conf:"default:bds"`
 		}
 	}{
@@ -152,18 +150,7 @@ func run(logger *zap.SugaredLogger) error {
 		DB:       db,
 	})
 
-	// Why do we need to set up our own http.Server?
-	//
-	// First and foremost we want to focus on the graceful load shedding.
-	// Our app is constantly running many goroutines, so we can't just kill it.
-	// We want to be sure those goroutines had a chance to finish their work.
-	//
-	// http.ListenAndServe() does not allow for setting custom timeouts.
-	//
-	// In order to have a more control over application shutdown we need to initialize
-	// our own http.Server with proper configuration.
-
-	api := http.Server{
+	apiSrv := http.Server{
 		Addr:         cfg.Api.Host,
 		Handler:      apiMux,
 		ReadTimeout:  cfg.Api.ReadTimeout,
@@ -177,7 +164,7 @@ func run(logger *zap.SugaredLogger) error {
 	go func() {
 		logger.Infow("Starting service", "host", cfg.Api.Host)
 		defer logger.Infow("Service stopped", "host", cfg.Api.Host)
-		apiErrors <- api.ListenAndServe()
+		apiErrors <- apiSrv.ListenAndServe()
 	}()
 
 	select {
@@ -190,8 +177,8 @@ func run(logger *zap.SugaredLogger) error {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.Api.ShutdownTimeout)
 		defer cancel()
 
-		if err = api.Shutdown(ctx); err != nil {
-			_ = api.Close()
+		if err = apiSrv.Shutdown(ctx); err != nil {
+			_ = apiSrv.Close()
 			return fmt.Errorf("cannot shutdown server gracefully: %w", err)
 		}
 	}
