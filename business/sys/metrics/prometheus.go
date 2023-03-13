@@ -1,11 +1,12 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/tchorzewski1991/bds/base/web"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/tchorzewski1991/bds/base/web"
 )
 
 var dbHist = prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -21,8 +22,9 @@ var httpHist = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 }, []string{"handler", "method", "code"})
 
 func init() {
-	prometheus.Register(dbHist)
-	prometheus.Register(httpHist)
+	// TODO: change the registration of metrics and handle err properly
+	_ = prometheus.Register(dbHist)
+	_ = prometheus.Register(httpHist)
 }
 
 type Histogram struct {
@@ -37,7 +39,7 @@ func (h *Histogram) Send() {
 	h.hist.WithLabelValues(lvs...).Observe(took.Seconds())
 }
 
-// HttpHistogram creates a new Histogram responsible for observing http requests
+// HttpHistogram creates a new Histogram responsible for observing http requests.
 func HttpHistogram(r *http.Request, v *web.CtxValues) *Histogram {
 	return &Histogram{
 		hist: httpHist,
@@ -49,7 +51,7 @@ func HttpHistogram(r *http.Request, v *web.CtxValues) *Histogram {
 	}
 }
 
-// DbHistogram creates a new Histogram responsible for observing db calls
+// DbHistogram creates a new Histogram responsible for observing db calls.
 func DbHistogram(table, operation string) *Histogram {
 	return &Histogram{
 		hist: dbHist,

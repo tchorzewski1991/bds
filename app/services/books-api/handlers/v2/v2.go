@@ -1,9 +1,10 @@
 package v2
 
 import (
+	"net/http"
+
 	"github.com/tchorzewski1991/bds/base/web"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 const version = "v2"

@@ -3,10 +3,11 @@ package mid
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/sys/auth"
 	v1 "github.com/tchorzewski1991/bds/business/web/v1"
-	"net/http"
 )
 
 func Authorize(permission string) web.Middleware {

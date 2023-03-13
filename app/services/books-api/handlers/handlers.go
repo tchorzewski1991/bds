@@ -4,6 +4,10 @@ package handlers
 
 import (
 	"expvar"
+	"net/http"
+	"net/http/pprof"
+	"os"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tchorzewski1991/bds/app/services/books-api/handlers/debug"
@@ -12,9 +16,6 @@ import (
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/web/v1/mid"
 	"go.uber.org/zap"
-	"net/http"
-	"net/http/pprof"
-	"os"
 )
 
 type DebugMuxConfig struct {

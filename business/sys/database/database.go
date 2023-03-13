@@ -5,11 +5,12 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"net/url"
+	"time"
+
 	"github.com/ardanlabs/darwin"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"net/url"
-	"time"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 	ErrNotUnique = errors.New("entry not unique")
 )
 
-// lib/pq errorCodeNames
+// UniqueViolation lib/pq errorCodeNames
 // https://github.com/lib/pq/blob/master/error.go#L178
 const UniqueViolation = "23505"
 
@@ -37,9 +38,9 @@ type Config struct {
 }
 
 func Open(config Config) (*sqlx.DB, error) {
-	dbURI, err := databaseURI(config)
-	if err != nil {
-		return nil, err
+	dbURI := databaseURI(config)
+	if dbURI == "" {
+		return nil, errors.New("cannot construct db uri")
 	}
 
 	db, err := sqlx.Open("postgres", dbURI)
@@ -161,7 +162,7 @@ func GenerateSchema(ctx context.Context, db *sqlx.DB) (Schema, error) {
 
 // private
 
-func databaseURI(c Config) (string, error) {
+func databaseURI(c Config) string {
 	q := make(url.Values)
 	q.Set("sslmode", "disable")
 
@@ -173,5 +174,5 @@ func databaseURI(c Config) (string, error) {
 		RawQuery: q.Encode(),
 	}
 
-	return u.String(), nil
+	return u.String()
 }

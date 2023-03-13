@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/tchorzewski1991/bds/app/services/books-api/handlers"
-	"github.com/tchorzewski1991/bds/business/sys/database"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,7 +13,9 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/emadolsky/automaxprocs/maxprocs"
+	"github.com/tchorzewski1991/bds/app/services/books-api/handlers"
 	"github.com/tchorzewski1991/bds/base/logger"
+	"github.com/tchorzewski1991/bds/business/sys/database"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 )
@@ -133,7 +133,7 @@ func run(logger *zap.SugaredLogger) error {
 	})
 
 	go func() {
-		if err = http.ListenAndServe(cfg.Api.DebugHost, debugMux); err != nil {
+		if err = http.ListenAndServe(cfg.Api.DebugHost, debugMux); err != nil { // nolint:gosec
 			logger.Errorw("Debug service shutdown", "host", cfg.Api.DebugHost, "error", err)
 		}
 	}()

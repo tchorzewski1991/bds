@@ -3,10 +3,11 @@ package mid
 import (
 	"context"
 	"fmt"
-	"github.com/tchorzewski1991/bds/base/web"
-	"github.com/tchorzewski1991/bds/business/sys/metrics"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/tchorzewski1991/bds/base/web"
+	"github.com/tchorzewski1991/bds/business/sys/metrics"
 )
 
 // Panics recovers from panic() and captures the error, so it is reported in Errors middleware.

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -33,10 +34,10 @@ func GenerateToken(claims Claims) (string, error) {
 
 // private
 
-// TODO: extract it to ENV or somewhere else
+// TODO: extract it to ENV or somewhere else.
 const secret = "secret"
 
-func keyFunc(token *jwt.Token) (interface{}, error) {
+func keyFunc(token *jwt.Token) (any, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 	}

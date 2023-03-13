@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/tchorzewski1991/bds/business/sys/auth"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/tchorzewski1991/bds/business/sys/auth"
 )
 
 func main() {

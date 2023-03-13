@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/golang-jwt/jwt/v4"
 	uid "github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -12,7 +14,6 @@ import (
 	"github.com/tchorzewski1991/bds/business/sys/database"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 var (
@@ -105,7 +106,7 @@ func checkPass(user db.User, pass string) error {
 	return nil
 }
 
-// TODO
+// TODO.
 func checkEmail(_ string) error {
 	return nil
 }

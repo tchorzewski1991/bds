@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"errors"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/tchorzewski1991/bds/business/sys/database"
@@ -23,7 +25,7 @@ func (s Store) QueryByID(ctx context.Context, id int) (Book, error) {
 		WithErrorMapper(database.NewErrorMapper()).
 		WithMetric(database.NewMetric("books", "QueryByID"))
 
-	rows, err := sqlx.NamedQueryContext(ctx, ext, q, map[string]interface{}{
+	rows, err := sqlx.NamedQueryContext(ctx, ext, q, map[string]any{
 		"id": id,
 	})
 	if err != nil {
@@ -61,7 +63,7 @@ func (s Store) Query(ctx context.Context, page int, rowsPerPage int) ([]Book, er
 		WithErrorMapper(database.NewErrorMapper()).
 		WithMetric(database.NewMetric("books", "Query"))
 
-	rows, err := sqlx.NamedQueryContext(ctx, ext, q, map[string]interface{}{
+	rows, err := sqlx.NamedQueryContext(ctx, ext, q, map[string]any{
 		"offset":        (page - 1) * rowsPerPage,
 		"rows_per_page": rowsPerPage,
 	})
@@ -105,7 +107,8 @@ func (s Store) Create(ctx context.Context, book Book) (id int, err error) {
 	err = ext.QueryRowxContext(ctx, query, args...).Scan(&id)
 	if err != nil {
 		// Checks if the error is of code 23505 (unique_violation).
-		if pqerr, ok := err.(*pq.Error); ok && pqerr.Code == database.UniqueViolation {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == database.UniqueViolation {
 			return 0, database.ErrNotUnique
 		}
 		return 0, err

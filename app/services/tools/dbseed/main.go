@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ardanlabs/conf/v3"
-	"github.com/tchorzewski1991/bds/business/sys/database"
 	"os"
 	"time"
+
+	"github.com/ardanlabs/conf/v3"
+	"github.com/tchorzewski1991/bds/business/sys/database"
 )
 
 var build = "develop"

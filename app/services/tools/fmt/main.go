@@ -24,7 +24,7 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		m := make(map[string]interface{})
+		m := make(map[string]any)
 
 		err := json.Unmarshal([]byte(line), &m)
 		if err != nil {

@@ -1,8 +1,9 @@
 package db
 
 import (
-	"github.com/lib/pq"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type User struct {

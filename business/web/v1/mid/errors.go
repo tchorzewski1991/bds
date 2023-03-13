@@ -2,10 +2,11 @@ package mid
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/tchorzewski1991/bds/base/web"
 	v1 "github.com/tchorzewski1991/bds/business/web/v1"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 func Errors(logger *zap.SugaredLogger) web.Middleware {

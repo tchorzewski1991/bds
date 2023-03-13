@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Response(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) error {
+func Response(ctx context.Context, w http.ResponseWriter, statusCode int, data any) error {
 
 	// Set status code in the context.
 	err := SetStatusCode(ctx, statusCode)

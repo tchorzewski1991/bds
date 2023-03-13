@@ -3,12 +3,13 @@ package debug
 import (
 	"context"
 	"encoding/json"
-	"github.com/jmoiron/sqlx"
-	"github.com/tchorzewski1991/bds/business/sys/database"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/tchorzewski1991/bds/business/sys/database"
+	"go.uber.org/zap"
 )
 
 type CheckHandler struct {
@@ -97,7 +98,7 @@ func (h CheckHandler) Liveness(w http.ResponseWriter, _ *http.Request) {
 
 // private
 
-func response(w http.ResponseWriter, statusCode int, data interface{}) error {
+func response(w http.ResponseWriter, statusCode int, data any) error {
 	// Set the content type and headers once we know marshaling has succeeded.
 	w.Header().Set("Content-Type", "application/json")
 

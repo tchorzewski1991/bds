@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"encoding/csv"
+	"errors"
 	"flag"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"github.com/tchorzewski1991/bds/business/sys/database"
 	"io"
 	"os"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/tchorzewski1991/bds/business/sys/database"
 )
 
 func main() {
@@ -35,30 +37,26 @@ func run() error {
 	flag.Parse()
 
 	if source == "" {
-		fmt.Println("ERR: source cannot be empty")
-		os.Exit(1)
+		return errors.New("source cannot be empty")
 	}
 
 	if bufferSize < 2 || bufferSize > 50_000 {
-		fmt.Println("ERR: buffer size is not valid")
-		os.Exit(1)
+		return errors.New("buffer size is not valid")
 	}
 
 	f, err := os.Open(source)
 	if err != nil {
-		fmt.Println("ERR: source file does not exist")
-		os.Exit(1)
+		return fmt.Errorf("source file does not exist: %w", err)
 	}
 
 	db, err := database.Open(database.Config{
 		User: "postgres",
 		Pass: "password",
-		Host: "localhost",
+		Host: "db",
 		Name: "bds",
 	})
 	if err != nil {
-		fmt.Printf("ERR: cannot connect to db: %v", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot connect to db: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -66,16 +64,14 @@ func run() error {
 
 	_, err = database.Check(ctx, db)
 	if err != nil {
-		fmt.Printf("ERR: checking db status failes: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot check db status: %w", err)
 	}
 
 	r := csv.NewReader(f)
 
 	_, err = r.Read()
 	if err != nil {
-		fmt.Println("ERR: cannot read source file")
-		os.Exit(1)
+		return fmt.Errorf("cannot read source: %w", err)
 	}
 
 	stats := struct {
@@ -105,7 +101,8 @@ func run() error {
 			success += 1
 		}
 
-		tx.Commit()
+		// TODO: revisit releaseBuffer impl. and handle err properly
+		_ = tx.Commit()
 
 		return success, failure
 	}
@@ -115,7 +112,7 @@ func run() error {
 	for {
 		if len(buffer) < bufferSize {
 			row, err = r.Read()
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				success, failure := releaseBuffer()
 				stats.success += success
 				stats.failure += failure

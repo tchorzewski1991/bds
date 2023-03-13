@@ -14,7 +14,7 @@ func New(fields ...Field) (*zap.SugaredLogger, error) {
 	conf.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
 	// Assign initial fields common to all of logs
-	initialFields := make(map[string]interface{})
+	initialFields := make(map[string]any)
 	for _, f := range fields {
 		initialFields[f.Name] = f.Value
 	}
@@ -31,5 +31,5 @@ func New(fields ...Field) (*zap.SugaredLogger, error) {
 
 type Field struct {
 	Name  string
-	Value interface{}
+	Value any
 }

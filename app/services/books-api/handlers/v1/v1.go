@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/core/book"
 	"github.com/tchorzewski1991/bds/business/core/user"
 	"github.com/tchorzewski1991/bds/business/web/v1/mid"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 const version = "v1"

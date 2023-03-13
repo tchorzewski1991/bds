@@ -3,8 +3,9 @@ package auth
 import (
 	"context"
 	"errors"
-	"github.com/golang-jwt/jwt/v4"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 var ErrClaimsNotFound = errors.New("claims not found")

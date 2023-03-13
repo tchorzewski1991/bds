@@ -3,13 +3,14 @@ package v1
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/dimfeld/httptreemux/v5"
 	"github.com/pkg/errors"
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/core/book"
-	"github.com/tchorzewski1991/bds/business/web/v1"
-	"net/http"
-	"strconv"
+	v1 "github.com/tchorzewski1991/bds/business/web/v1"
 )
 
 type bookHandler struct {
@@ -60,7 +61,7 @@ func (h bookHandler) Query(ctx context.Context, w http.ResponseWriter, r *http.R
 }
 
 func (h bookHandler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	params := httptreemux.ContextParams(r.Context())
+	params := httptreemux.ContextParams(r.Context()) // nolint:contextcheck
 
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {

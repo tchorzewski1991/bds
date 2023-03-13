@@ -2,9 +2,10 @@ package mid
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/sys/metrics"
-	"net/http"
 )
 
 func Metrics() web.Middleware {

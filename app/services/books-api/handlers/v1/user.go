@@ -3,12 +3,13 @@ package v1
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/core/user"
 	"github.com/tchorzewski1991/bds/business/sys/auth"
-	"github.com/tchorzewski1991/bds/business/web/v1"
-	"net/http"
+	v1 "github.com/tchorzewski1991/bds/business/web/v1"
 )
 
 type userHandler struct {
