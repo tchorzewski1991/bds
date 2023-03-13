@@ -1,10 +1,10 @@
 # Books Data System
 
-This project is still in progress.
+This section is still in progress.
 
 ## Functionalities
 
-This project is still in progress.
+This section is still in progress.
 
 ## Prerequisites
 
