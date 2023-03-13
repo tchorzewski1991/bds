@@ -15,8 +15,8 @@ clean:
 	@echo "  >  Removing $(APP) executable"
 	@rm $(APP) 2> /dev/null | true
 
-staticcheck:
-	staticcheck -checks=all ./...
+lint:
+	@golangci-lint run -v -c golangci.yaml
 
 tidy:
 	go mod tidy
