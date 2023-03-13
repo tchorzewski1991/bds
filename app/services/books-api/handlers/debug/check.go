@@ -1,4 +1,4 @@
-package checkgrp
+package debug
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type Handlers struct {
+type CheckHandler struct {
 	Build  string
 	Logger *zap.SugaredLogger
 	DB     *sqlx.DB
@@ -19,7 +19,7 @@ type Handlers struct {
 
 // Readiness is responsible for checking all the dependencies we expect
 // to be up and running during the runtime e.x database.
-func (h Handlers) Readiness(w http.ResponseWriter, r *http.Request) {
+func (h CheckHandler) Readiness(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second)
 	defer cancel()
 
@@ -55,7 +55,7 @@ func (h Handlers) Readiness(w http.ResponseWriter, r *http.Request) {
 }
 
 // Liveness is responsible for returning info about the running service.
-func (h Handlers) Liveness(w http.ResponseWriter, req *http.Request) {
+func (h CheckHandler) Liveness(w http.ResponseWriter, _ *http.Request) {
 	// Set current hostname
 	host, err := os.Hostname()
 	if err != nil {

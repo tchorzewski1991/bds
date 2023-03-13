@@ -1,27 +1,27 @@
-package user
+package v1
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/core/user"
 	"github.com/tchorzewski1991/bds/business/sys/auth"
-	v1 "github.com/tchorzewski1991/bds/business/web/v1"
+	"github.com/tchorzewski1991/bds/business/web/v1"
 	"net/http"
 )
 
-type Handler struct {
-	User user.Core
+type userHandler struct {
+	user user.Core
 }
 
-func (h Handler) Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h userHandler) Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	email, pass, ok := r.BasicAuth()
 	if !ok {
 		return v1.NewRequestError(errors.New("user email or password is missing"), http.StatusUnauthorized)
 	}
 
-	claims, err := h.User.Authenticate(ctx, email, pass)
+	claims, err := h.user.Authenticate(ctx, email, pass)
 	if err != nil {
 		switch {
 		case errors.Is(err, user.ErrNotFound):
@@ -43,7 +43,7 @@ func (h Handler) Token(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}{tkn})
 }
 
-func (h Handler) Profile(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
+func (h userHandler) Profile(ctx context.Context, w http.ResponseWriter, _ *http.Request) error {
 
 	// Get claims out of the ctx. At this point we should always have them available
 	// as user has already been authenticated and authorized.
@@ -52,7 +52,7 @@ func (h Handler) Profile(ctx context.Context, w http.ResponseWriter, _ *http.Req
 		return v1.NewRequestError(err, http.StatusForbidden)
 	}
 
-	usr, err := h.User.QueryByUUID(ctx, claims.Subject)
+	usr, err := h.user.QueryByUUID(ctx, claims.Subject)
 	if err != nil {
 		if errors.Is(err, user.ErrNotFound) {
 			return v1.NewRequestError(err, http.StatusNotFound)

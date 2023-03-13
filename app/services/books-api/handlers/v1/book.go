@@ -1,28 +1,22 @@
-package book
+package v1
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/dimfeld/httptreemux/v5"
+	"github.com/pkg/errors"
 	"github.com/tchorzewski1991/bds/base/web"
 	"github.com/tchorzewski1991/bds/business/core/book"
-	v1 "github.com/tchorzewski1991/bds/business/web/v1"
+	"github.com/tchorzewski1991/bds/business/web/v1"
 	"net/http"
 	"strconv"
 )
 
-// Notes on HTTP handlers:
-// - Handlers are presentation layer.
-//   They take external input, process it and send the response back to external output.
-// - There is a bunch of details we want to keep consistent between each of these handlers
-//   like: logging, error handling or JSON marshaling protocol.
-
-type Handler struct {
-	Book book.Core
+type bookHandler struct {
+	book book.Core
 }
 
-func (h Handler) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h bookHandler) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	query := r.URL.Query()
 
 	var err error
@@ -49,7 +43,7 @@ func (h Handler) Query(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		rowsPerPage = 20
 	}
 
-	books, err := h.Book.Query(ctx, page, rowsPerPage)
+	books, err := h.book.Query(ctx, page, rowsPerPage)
 	if err != nil {
 		return fmt.Errorf("unable to query books: %w", err)
 	}
@@ -65,7 +59,7 @@ func (h Handler) Query(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func (h Handler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h bookHandler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	params := httptreemux.ContextParams(r.Context())
 
 	id, err := strconv.Atoi(params["id"])
@@ -73,7 +67,7 @@ func (h Handler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.R
 		return v1.NewRequestError(fmt.Errorf("id param is not valid: %w", err), http.StatusBadRequest)
 	}
 
-	b, err := h.Book.QueryByID(ctx, id)
+	b, err := h.book.QueryByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, book.ErrNotFound) {
 			return v1.NewRequestError(err, http.StatusNotFound)
@@ -84,14 +78,14 @@ func (h Handler) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.R
 	return web.Response(ctx, w, http.StatusOK, b)
 }
 
-func (h Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h bookHandler) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var nb book.NewBook
 	err := web.Decode(r, &nb)
 	if err != nil {
 		return v1.NewRequestError(err, http.StatusBadRequest)
 	}
 
-	b, err := h.Book.Create(ctx, nb)
+	b, err := h.book.Create(ctx, nb)
 	if err != nil {
 		var fieldErr book.FieldError
 		if errors.As(err, &fieldErr) {

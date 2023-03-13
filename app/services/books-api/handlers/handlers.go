@@ -6,7 +6,7 @@ import (
 	"expvar"
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/tchorzewski1991/bds/app/services/books-api/handlers/debug/checkgrp"
+	"github.com/tchorzewski1991/bds/app/services/books-api/handlers/debug"
 	v1 "github.com/tchorzewski1991/bds/app/services/books-api/handlers/v1"
 	v2 "github.com/tchorzewski1991/bds/app/services/books-api/handlers/v2"
 	"github.com/tchorzewski1991/bds/base/web"
@@ -35,14 +35,14 @@ func DebugMux(cfg DebugMuxConfig) http.Handler {
 	mux.Handle("/debug/vars", expvar.Handler())
 	mux.Handle("/metrics", promhttp.Handler())
 
-	// Register check group endpoints
-	cgh := checkgrp.Handlers{
+	// Setup liveness/readiness routes.
+	ch := debug.CheckHandler{
 		Build:  cfg.Build,
 		Logger: cfg.Logger,
 		DB:     cfg.DB,
 	}
-	mux.HandleFunc("/debug/readiness", cgh.Readiness)
-	mux.HandleFunc("/debug/liveness", cgh.Liveness)
+	mux.HandleFunc("/debug/readiness", ch.Readiness)
+	mux.HandleFunc("/debug/liveness", ch.Liveness)
 
 	return mux
 }
@@ -55,11 +55,7 @@ type ApiMuxConfig struct {
 
 func ApiMux(cfg ApiMuxConfig) http.Handler {
 
-	// Notes and inconsistencies:
-	// 1. Let's assume web.App uses one logger for both API versions. Question - where should we put this
-	//    logging middleware? How to handle situation when we want to use different logging for both API versions?
-	//    Shouldn't we create a form of "registry" for version specific middleware?
-
+	// Initialize new web app with all necessary dependencies.
 	app := web.NewApp(
 		cfg.Shutdown,
 		mid.Metrics(),
@@ -68,10 +64,10 @@ func ApiMux(cfg ApiMuxConfig) http.Handler {
 		mid.Panics(),
 	)
 
-	// Load the v1 routes.
+	// Setup v1 routes.
 	v1.Routes(app, v1.Config{Logger: cfg.Logger, DB: cfg.DB})
 
-	// Load the v2 routes.
+	// Setup v2 routes.
 	v2.Routes(app, v2.Config{Logger: cfg.Logger})
 
 	return app
