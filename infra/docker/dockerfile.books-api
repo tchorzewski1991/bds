@@ -1,5 +1,5 @@
 # Build go binary
-FROM golang:1.17.7-alpine3.15 as build_flights-api
+FROM golang:1.19.7-alpine3.17 as build_flights-api
 ENV CGO_ENABLED 0
 ARG BUILD_REF
 

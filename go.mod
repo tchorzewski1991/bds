@@ -1,6 +1,6 @@
 module github.com/tchorzewski1991/bds
 
-go 1.17
+go 1.19
 
 require go.uber.org/automaxprocs v1.4.0
 
